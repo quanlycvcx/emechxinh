@@ -1,0 +1,2465 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <title>Quản lý</title>
+        
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+        
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+        
+        <style>
+        :root {
+          --primary-color: #28a745;
+          --primary-hover: #218838;
+          --coffee-color: #FFDD00;
+          --coffee-hover: #e6cb00;
+          --donate-color: #007bff;
+          --donate-hover: #0069d9;
+          --success-color: #28a745;
+          --error-color: #d32f2f;
+        }
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .leaflet-top.leaflet-right {
+            top: 75px !important;
+        }
+        
+        #search-ui-container { 
+            position: absolute; 
+            top: 15px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 1000; 
+            display: flex; 
+            align-items: center;
+            gap: 5px; 
+            background: white; 
+            padding: 4px 8px; 
+            border-radius: 30px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            width: 90%; 
+            max-width: 440px; 
+            box-sizing: border-box; 
+        }
+        #search-ui-container input { 
+            border: none; 
+            padding: 8px 4px 8px 10px; 
+            width: 100%; 
+            outline: none; 
+            border-radius: 30px; 
+            font-size: 14px; 
+            background: transparent; 
+        }
+        .clear-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 8px;
+            display: none; 
+            align-items: center;
+            justify-content: center;
+        }
+        .clear-btn:hover { color: #666; }
+
+        #search-button { 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 30px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: background 0.2s; 
+            font-size: 13px; 
+            flex-shrink: 0; 
+        }
+        #search-button:hover { background: #218838; }
+
+        .info-box {
+          background: rgba(255, 255, 255, 0.98); 
+          border: 1px solid #ccc;
+          padding: 12px; 
+          border-radius: 8px;
+          width: 340px;
+          max-width: 90vw; 
+          position: absolute; top: 75px; left: 12px; z-index: 2000;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+          max-height: 75vh; overflow-y: auto;
+          font-size: 13px; color: #333;
+        }
+        .info-box h3 { margin: 0 0 8px 0; font-size: 1.1em; color: var(--primary-color); padding-right: 20px; }
+        .info-box h4 { margin: 12px 0 6px 0; font-size: 1.05em; border-top: 1px solid #ddd; padding-top: 8px; font-weight: bold; }
+        .info-box p { margin: 5px 0; line-height: 1.4; }
+        .info-box .current-weather-main { display: flex; align-items: center; font-weight: bold; margin-bottom: 8px; }
+        .info-box .current-weather-main img { width: 35px; height: 35px; margin-right: 5px; }
+        .info-box .forecast-item { display: flex; flex-direction: column; gap: 2px; font-size: 0.9em; padding: 4px 0; border-bottom: 1px dashed #eee; }
+        .info-box.hidden { display: none; }
+        
+        .weather-tab-container { display: flex; gap: 4px; margin: 8px 0; border-bottom: 1px solid #ddd; padding-bottom: 6px; overflow-x: auto; }
+        .weather-tab-btn { background: #f1f3f4; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; white-space: nowrap; transition: 0.2s; }
+        .weather-tab-btn.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .weather-chart-wrapper { width: 100%; margin-top: 10px; background: #fff; border-radius: 6px; padding: 5px; box-sizing: border-box; border: 1px solid #eee; }
+
+        .weather-header { position: relative; }
+        .weather-close-btn { position: absolute; top: -2px; right: -2px; background: #fff; border: 1px solid #ccc; border-radius: 50%; width: 22px; height: 22px; line-height: 20px; text-align: center; font-size: 16px; font-weight: bold; cursor: pointer; color: #888; }
+        .weather-close-btn:hover { color: #333; background: #eee; }
+
+        #right-controls-container { 
+            position: absolute; bottom: 30px; right: 12px; z-index: 1000; 
+            display: flex; flex-direction: column; gap: 10px; 
+        }
+        #right-controls-container a, #right-controls-container button,
+        #support-controls-container a, #support-controls-container button { 
+            width: 46px; height: 46px; background-color: white; border-radius: 50%; 
+            box-shadow: 0 3px 12px rgba(0,0,0,0.2); display: flex; justify-content: center; 
+            align-items: center; text-decoration: none; color: #333; 
+            transition: background 0.2s, color 0.2s, transform 0.2s; border: none; cursor: pointer; padding: 0; 
+        }
+        #right-controls-container a:hover, #right-controls-container button:hover,
+        #support-controls-container a:not(#buy-me-a-coffee-btn):not(#donate-btn):hover, 
+        #support-controls-container button:not(#buy-me-a-coffee-btn):not(#donate-btn):hover {
+            background-color: #f8f9fa; color: #28a745;
+        }
+        #right-controls-container svg, #support-controls-container svg { width: 22px; height: 22px; fill: currentColor; }
+        
+        .btn-active { background-color: #e8f0fe !important; color: var(--primary-color) !important; }
+
+        #support-controls-container {
+            position: absolute; bottom: 30px; left: 12px; z-index: 1000; display: flex; flex-direction: column; gap: 10px;
+        }
+        #support-controls-container .support-row { display: flex; gap: 10px; }
+        #support-controls-container a:hover, #support-controls-container button:hover { transform: scale(1.08); }
+        #buy-me-a-coffee-btn { background: var(--coffee-color) !important; color: #333 !important; }
+        #donate-btn { background: var(--donate-color) !important; color: white !important; }
+        #info-btn { background: white !important; color: #333 !important; font-size: 18px; font-weight: bold; font-family: 'Georgia', serif; }
+
+        #draw-edit-overlay-container {
+            position: absolute; top: 15px; left: 15px; z-index: 3000; display: flex; gap: 6px;
+            background: rgba(255, 255, 255, 0.95); padding: 6px 10px; border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); align-items: center; border: 1px solid #28a745;
+        }
+        #draw-edit-overlay-container span { font-size: 11px; font-weight: bold; color: #333; }
+        .btn-draw-helper { padding: 4px 10px; font-size: 11px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-draw-undo { background-color: #ff9800; }
+        .btn-draw-undo:hover { background-color: #e65100; }
+        .btn-draw-cancel { background-color: #d32f2f; }
+        .btn-draw-cancel:hover { background-color: #b71c1c; }
+
+        /* Style cho nhóm nút Chia sẻ & Dẫn đường trong Popup */
+        .share-popup-box {
+            font-size: 13px;
+            color: #333;
+            line-height: 1.4;
+            min-width: 220px;
+        }
+        .share-btn-group {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-share-action {
+            flex: 1;
+            padding: 6px 8px;
+            border-radius: 18px;
+            border: none;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            transition: opacity 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+        .btn-share-action:active { transform: scale(0.96); }
+        .btn-share-copy { background-color: #e8f0fe; color: #1a73e8; border: 1px solid #c2e7ff; }
+        .btn-share-copy:hover { background-color: #d3e3fd; }
+        .btn-share-gmaps { background-color: #28a745; color: white; }
+        .btn-share-gmaps:hover { background-color: #218838; }
+        .btn-share-route { background-color: #ff9800; color: white; }
+        .btn-share-route:hover { background-color: #e65100; }
+
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); z-index: 5500; display: none; justify-content: center; align-items: center; 
+        }
+        .modal-overlay.visible { display: flex; }
+        .modal-content { 
+            background: white; padding: 22px; border-radius: 14px; max-width: 440px; width: 90%; 
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3); position: relative; font-size: 14px; color: #333; 
+            max-height: 85vh; overflow-y: auto; box-sizing: border-box;
+        }
+        .modal-close-btn { position: absolute; top: 12px; right: 14px; font-size: 24px; background: none; border: none; cursor: pointer; color: #aaa; }
+        .modal-close-btn:hover { color: #666; }
+        .modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        
+        .dropzone { 
+            border: 2px dashed #dadce0; border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; 
+            transition: all 0.3s; background: #fff; margin-top: 10px; 
+        }
+        .dropzone.dragover { border-color: #1a73e8; background-color: #e8f0fe; }
+        .dropzone p { color: #5f6368; font-size: 0.95rem; margin: 0; }
+        
+        .main-coord-box { background: #e8f0fe; padding: 15px; border-radius: 12px; text-align: center; margin-top: 15px; }
+        .coord-val { font-family: 'Consolas', monospace; font-size: 1.15rem; font-weight: bold; display: block; margin-bottom: 10px; color: #1a73e8; word-break: break-all; }
+        
+        .info-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #dadce0; font-size: 13px; }
+        .info-table th, .info-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #dadce0; }
+        .info-table th { background: #f1f3f4; color: #5f6368; width: 30%; }
+        
+        .btn-ocr-group { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+        .btn-action { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; text-decoration: none; text-align: center; }
+        .btn-blue { background: #1a73e8; color: white; }
+        .btn-gray { background: #5f6368; color: white; }
+        .btn-green { background: #28a745; color: white; }
+        .btn-orange { background: #ff9800; color: white; }
+        .btn-gray.copied { background: #28a745; }
+
+        .donate-modal-content h2 { color: var(--donate-color); text-align: center; margin-bottom: 10px; }
+        .donate-modal-content p { margin-bottom: 15px; line-height: 1.5; }
+        .donate-modal-content .support-option { border: 1px solid #ddd; padding: 10px; margin-top: 10px; border-radius: 4px; }
+        .donate-modal-content .support-option h4 { margin: 0 0 5px 0; color: #28a745; font-size: 1em; }
+        .donate-modal-content .support-option p { margin: 0; font-size: 0.95em; }
+        .donate-modal-content .support-option p strong { display: block; color: #333; font-size: 1.1em; cursor: pointer; }
+        .donate-modal-content .highlight { color: var(--error-color); font-weight: bold; }
+
+        #loading-spinner { 
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            border: 5px solid #f3f3f3; border-top: 5px solid #28a745; border-radius: 50%; 
+            width: 40px; height: 40px; animation: spin 1s linear infinite; z-index: 6000; 
+        }
+        @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        #toast-notification { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 6500; padding: 12px 24px; border-radius: 30px; color: white; opacity: 0; visibility: hidden; transition: 0.3s; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-size: 13px; white-space: nowrap; }
+        #toast-notification.show { opacity: 1; visibility: visible; }
+        #toast-notification.success { background-color: #28a745; }
+        #toast-notification.error { background-color: #d32f2f; }
+        #toast-notification.info { background-color: #007bff; }
+
+        .leaflet-routing-container { display: none !important; }
+        
+        #route-summary-modal {
+            position: absolute; top: 75px; left: 50%; transform: translateX(-50%); z-index: 2000;
+            width: 330px; background: rgba(255, 255, 255, 0.98); padding: 16px;
+            border-radius: 14px; box-shadow: 0 5px 20px rgba(0,0,0,0.25); color: #333; font-size: 14px; border: 1px solid #ddd;
+        }
+        #route-summary-modal h4 { margin: 0 0 10px 0; color: #28a745; font-size: 1.1em; font-weight: bold; text-align: center; }
+        #route-summary-modal p { margin: 5px 0; font-weight: 500; display: flex; justify-content: space-between; padding: 2px 4px; }
+        #route-summary-modal p span { font-weight: bold; color: #1a73e8; }
+        
+        .route-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+        .route-actions-grid button {
+            padding: 8px 10px; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 12px;
+            transition: background 0.2s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 4px;
+        }
+        .route-actions-grid button:active { transform: scale(0.97); }
+        
+        .btn-kml { background-color: #007bff; color: white; }
+        .btn-tts { background-color: #ff9800; color: white; }
+        .btn-tts.speaking { background-color: #e65100; animation: pulse-orange 1.5s infinite; }
+        .btn-clear { background-color: #d32f2f; color: white; grid-column: span 2; margin-top: 4px; }
+        .btn-close-box { background-color: #6c757d; color: white; grid-column: span 2; }
+        
+        @keyframes pulse-orange { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        .input-with-clear { position: relative; display: flex; align-items: center; margin-top: 6px; }
+        .input-with-clear input { width: 100%; padding: 10px 65px 10px 14px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 24px; outline: none; font-size: 14px; }
+        .input-with-clear .inner-clear-btn { position: absolute; right: 42px; color: #ccc; cursor: pointer; font-size: 18px; display: none; }
+        .input-with-clear input:not(:placeholder-shown) + .inner-clear-btn { display: block; }
+        .input-with-clear .inner-clear-btn:hover { color: #666; }
+        
+        .btn-map-picker { position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: #5f6368; padding: 4px; display: flex; align-items: center; justify-content: center; z-index: 5; }
+        .btn-map-picker:hover { color: #28a745; }
+        .btn-map-picker svg { width: 20px; height: 20px; fill: currentColor; }
+        .btn-map-picker.picking { color: #28a745; animation: pulse 1.2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+        #get-directions-btn { margin-top: 18px; padding: 11px 20px; background-color: #28a745; color: white; border: none; border-radius: 24px; cursor: pointer; font-weight: bold; width: 100%; font-size: 14px; }
+        
+        #streetview-modal .modal-content { max-width: 800px; width: 95%; height: 75vh; display: flex; flex-direction: column; padding: 15px; }
+        #streetview-pano { width: 100%; flex-grow: 1; border-radius: 8px; margin-top: 10px; background: #eee; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
+        .form-group input, .form-group textarea { width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .form-group textarea { resize: vertical; height: 80px; }
+
+        .radar-contrast-layer { filter: url(#radar-palette) saturate(200%) contrast(125%) !important; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
+
+        .drive-file-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
+        .drive-file-item:hover { background: #f5f5f5; }
+        .drive-file-item label { display: flex; align-items: center; gap: 10px; cursor: pointer; width: 100%; font-size: 14px; color: #333; font-weight: 500; margin: 0; }
+        .drive-file-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+
+        .drive-search-wrapper { margin: 8px 0 12px 0; position: relative; }
+        .drive-search-wrapper input { width: 100%; padding: 10px 14px; box-sizing: border-box; border: 1px solid #dadce0; border-radius: 8px; outline: none; font-size: 13px; transition: border-color 0.2s; }
+        .drive-search-wrapper input:focus { border-color: #1a73e8; }
+
+        .popup-img-container { margin-top: 5px; cursor: pointer; text-align: center; }
+        .popup-img-container img { width: 100%; max-width: 150px; border-radius: 5px; border: 1px solid #ddd; }
+        .popup-btn-large { display: inline-block; margin-top: 5px; color: #1a73e8; font-weight: bold; text-decoration: underline; cursor: pointer; }
+        #view-large-image-modal .modal-content { max-width: 90vw; width: auto; text-align: center; }
+        #large-image-display { max-width: 100%; max-height: 70vh; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+
+        .tree-popup-container { font-size: 13px; color: #333; line-height: 1.4; padding: 2px; font-family: sans-serif; min-width: 220px; max-width: 260px; }
+        .tree-popup-title { color: #2e7d32; display: block; margin-bottom: 6px; font-size: 14px; border-bottom: 1px dashed #ccc; padding-bottom: 4px; font-weight: bold; }
+        .tree-gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; border-top: 1px dashed #ccc; padding-top: 8px; }
+        .tree-thumb-wrapper { position: relative; width: 100%; height: 100px; background: #f0f0f0; border-radius: 4px; overflow: hidden; border: 1px solid #dadce0; }
+        .tree-thumb { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: transform 0.2s; }
+        .tree-thumb:hover { transform: scale(1.05); }
+        .no-img-text { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 11px; color: #999; text-align: center; font-style: italic; padding: 4px; background: #fafafa; }
+
+        .layer-opacity-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 24px;
+            margin-top: 2px;
+            margin-bottom: 6px;
+            font-size: 11px;
+            color: #666;
+        }
+        .layer-opacity-slider {
+            -webkit-appearance: none;
+            width: 80px;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+            outline: none;
+        }
+        .layer-opacity-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            cursor: pointer;
+        }
+
+        @media (max-width: 767px) {
+            .leaflet-top.leaflet-right { top: 65px !important; }
+            #search-ui-container { top: 12px; padding: 2px 6px; width: 92%; }
+            #search-ui-container input { padding: 6px 2px 6px 6px; font-size: 13px; }
+            #search-button { padding: 6px 14px; font-size: 12px; }
+            #right-controls-container { bottom: 20px; right: 10px; gap: 8px; }
+            #right-controls-container a, #right-controls-container button { width: 42px; height: 42px; }
+            #right-controls-container svg { width: 20px; height: 20px; }
+            #support-controls-container { bottom: 20px; left: 10px; gap: 8px; }
+            #support-controls-container a, #support-controls-container button { width: 42px; height: 42px; font-size: 18px; }
+            #support-controls-container svg { width: 20px; height: 20px; }
+            #support-controls-container .support-row { gap: 8px; }
+            .info-box { top: 65px; left: 4%; width: 92%; max-width: none; max-height: 50vh; }
+            .modal-content { padding: 18px; width: 94%; max-height: 80vh; }
+            #route-summary-modal { top: 65px; width: 85%; padding: 12px; }
+            .leaflet-top.leaflet-left { top: 70px; }
+            #streetview-modal .modal-content { height: 60vh; }
+        }
+        </style>
+    </head>
+    <body>
+        <svg width="0" height="0" style="position: absolute;">
+          <defs>
+            <filter id="radar-palette">
+              <feColorMatrix type="matrix" values="
+                2.5  -0.5  0.0  0.0  0.2 
+                1.2   0.8  -0.5  0.0  0.1 
+               -0.5  -1.5  3.0  0.0  -0.1 
+                0.0   0.0  0.0  1.0  0.0" />
+            </filter>
+          </defs>
+        </svg>
+
+        <div id="map"></div>
+
+        <div id="draw-edit-overlay-container" style="display: none;">
+            <span>CHẾ ĐỘ VẼ:</span>
+            <button class="btn-draw-helper btn-draw-undo" id="btn-draw-undo-node" title="Xóa điểm/nút vừa chấm sai">↩ Hủy nút vừa chấm</button>
+            <button class="btn-draw-helper btn-draw-cancel" id="btn-draw-cancel-all" title="Hủy vẽ lại toàn bộ">❌ Hủy nét vẽ</button>
+        </div>
+
+        <div id="search-ui-container">
+            <input type="text" id="search-input" placeholder="Tìm kiếm địa điểm...">
+            <button type="button" id="main-search-clear" class="clear-btn">×</button>
+            <button id="search-button">TÌM</button>
+        </div>
+
+        <div class="info-box hidden" id="weather-info"></div>
+
+        <div id="support-controls-container">
+            <a href="#" id="custom-locate-btn" title="Vị trí hiện tại của tôi">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+            </a>
+            
+            <button id="custom-draw-marker-btn" title="Đánh Dấu Điểm Vị Trí">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            </button>
+            <button id="custom-draw-line-btn" title="Đo Khoảng Cách / Vẽ Đường">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23 8c0 1.1-.9 2-2 2-.18 0-.35-.02-.51-.07l-3.56 3.55c.05.16.07.33.07.52 0 1.1-.9 2-2 2s-2-.9-2-2c0-.19.02-.36.07-.52l-2.55-2.55c-.16.05-.33.07-.52.07s-.36-.02-.52-.07l-4.55 4.56c.05.16.07.33.07.52 0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2c.19 0 .36.02.52.07l4.56-4.55C3.02 10.36 3 10.19 3 10c0-1.1.9-2 2-2s2 .9 2 2c0 .19-.02.36-.07.52l2.55 2.55c.16-.05.33-.07.52-.07s.36.02.52.07l3.55-3.56C14.02 9.35 14 9.18 14 9c0-1.1.9-2 2-2s2 .9 2 2c0 .18-.02.35-.07.51l3.56 3.56c.16-.05.33-.07.51-.07 1.1 0 2 .9 2 2z"/></svg>
+            </button>
+            <button id="custom-draw-poly-btn" title="Đo Diện Tích / Vẽ Vùng">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 15.58V13c0-1.1-.9-2-2-2H9V9.42c1.16-.41 2-1.51 2-2.82 0-1.66-1.34-3-3-3S5 4.94 5 6.6c0 1.31.84 2.41 2 2.82v5.16c-1.16.41-2 1.51-2 2.82 0 1.66 1.34 3 3 3s3-1.34 3-3c0-1.31-.84-2.41-2-2.82V13h4v2.58c-1.16.41-2 1.51-2 2.82 0 1.66 1.34 3 3 3s3-1.34 3-3c0-1.31-.84-2.41-2-2.82z"/></svg>
+            </button>
+            <button id="custom-export-kml-btn" title="Lưu Dữ Liệu" style="display: none; background-color: #e8f0fe; color: #28a745;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+            </button>
+            
+            <div class="support-row">
+                <a href="https://buymeacoffee.com/quanlycvcxv" target="_blank" id="buy-me-a-coffee-btn" title="Mời Em Ếch Xinh ly cà phê">☕</a>
+                <a href="#" id="donate-btn" title="Hỗ trợ Em Ếch Xinh duy trì">❤️</a>
+                <button id="info-btn" title="Ẩn/Hiện bảng thông tin thời tiết">i</button>
+            </div>
+        </div>
+
+        <div id="right-controls-container">
+            <button id="custom-directions-btn" title="Tìm đường đi">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.91V15h-2v4.91c-2.92-.58-5.36-2.67-6.52-5.41l1.54-.77C6.67 15.17 9.17 17 12 17s5.33-1.83 6.98-4.27l1.54.77c-1.16 2.74-3.6 4.83-6.52 5.41zM7.5 10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm9 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>
+            </button>
+            <button id="custom-streetview-btn" title="Kích hoạt Google Street View">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 2c-2.8 0-5.3 1.3-7 3.3V3H3v6h6V7H6.1C7.6 5.2 9.7 4 12 4c4.4 0 8 3.6 8 8s-3.6 8-8 8-8-3.6-8-8H2c0 5.5 4.5 10 10 10s10-4.5 10-10S17.5 2 12 2zM11.5 6c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5S14 9.9 14 8.5 12.9 6 11.5 6zm0 11c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"/></svg>
+            </button>
+            <button id="custom-image-ocr-btn" title="Trích xuất tọa độ từ ảnh">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"/></svg>
+            </button>
+            <button id="custom-browse-drive-btn" title="Mở danh mục bản đồ" style="background-color: #fff; color: #1a73e8;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            </button>
+            <a href="#" id="custom-upload-kmz-btn" title="Tải lên tệp KML hoặc KMZ cục bộ">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+            </a>
+            <input type="file" id="custom-kmz-upload-input" accept=".kmz,.kml" multiple style="display: none;">
+        </div>
+
+        <div id="route-summary-modal" style="display: none;">
+            <h4>Thông Tin Lộ Trình</h4>
+            <p>Khoảng cách: <span id="summary-distance">0.00 km</span></p>
+            <p>Thời gian di chuyển: <span id="summary-time">0 phút</span></p>
+            
+            <div class="route-actions-grid">
+                <button class="btn-kml" id="btn-save-route-kml" title="Lưu Tuyến đường dạng Bản đồ KML">📍 Tuyến KML</button>
+                <button class="btn-tts" id="btn-voice-navigation" title="Nghe Trợ lý đọc điều hướng hành trình">🔊 Nghe Điều Hướng</button>
+                <button class="btn-clear" id="btn-clear-route-logic">Xóa tuyến hành trình</button>
+                <button class="btn-close-box" onclick="document.getElementById('route-summary-modal').style.display = 'none';">Đóng bảng</button>
+            </div>
+        </div>
+
+        <div id="directions-modal" class="modal-overlay">
+            <div id="directions-modal-content" class="modal-content">
+                <button class="modal-close-btn" onclick="toggleDirectionsModal(false)">×</button>
+                <h3>Tìm đường đi ngắn nhất</h3>
+                <div>
+                    <label>Điểm bắt đầu:</label>
+                    <div class="input-with-clear">
+                        <input type="text" id="directions-start-input" placeholder="Nhập địa điểm, tọa độ hoặc Vị trí của tôi...">
+                        <span class="inner-clear-btn" data-target="directions-start-input">×</span>
+                        <button type="button" class="btn-map-picker" id="btn-pick-start" title="Chọn điểm bắt đầu từ Bản đồ">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label>Điểm đến:</label>
+                    <div class="input-with-clear">
+                        <input type="text" id="directions-end-input" placeholder="Nhập điểm đích đến hoặc chọn từ bản đồ...">
+                        <span class="inner-clear-btn" data-target="directions-end-input">×</span>
+                        <button type="button" class="btn-map-picker" id="btn-pick-end" title="Chọn điểm kết thúc từ Bản đồ">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="get-directions-btn">Tìm lộ trình</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="save-kml-modal" class="modal-overlay">
+            <div class="modal-content">
+                <button class="modal-close-btn" onclick="$('#save-kml-modal').removeClass('visible')">×</button>
+                <h3 id="save-modal-title">Lưu dữ liệu đo vẽ</h3>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="kml-filename">Tên File (Theo cấu trúc gợi ý):</label>
+                    <input type="text" id="kml-filename" placeholder="Ví dụ: NguyenVanA_KhaoSatCayXanh_ThuDuc">
+                </div>
+                <div class="form-group">
+                    <label for="kml-description" id="save-modal-desc-label">Mô tả nội dung đo vẽ chi tiết:</label>
+                    <textarea id="kml-description" placeholder="Ví dụ: Người thực hiện: Nguyễn Văn A
+Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đức..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-action btn-gray" onclick="$('#save-kml-modal').removeClass('visible')" style="border-radius:20px;">HỦY</button>
+                    <button class="btn-action btn-blue" id="btn-confirm-save-drive" style="border-radius:20px; padding: 8px 20px;">LƯU</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="drive-browser-modal" class="modal-overlay">
+            <div class="modal-content" style="max-width: 450px;">
+                <button class="modal-close-btn" onclick="$('#drive-browser-modal').removeClass('visible')">×</button>
+                <h3>Kho bản đồ dữ liệu đám mây</h3>
+                <p style="font-size:12px; color:#666; margin-top:-5px;">Tích chọn một hoặc nhiều lớp dữ liệu từ Drive để hiển thị đồng thời lên bản đồ.</p>
+                <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+                
+                <div class="drive-search-wrapper">
+                    <input type="text" id="drive-search-input" placeholder="🔍 Gõ từ khóa để lọc nhanh file bản đồ...">
+                </div>
+                
+                <div id="drive-files-list" style="max-height: 260px; overflow-y: auto;">
+                    <p style="text-align:center; color:#888;">Đang kết nối thư mục dữ liệu...</p>
+                </div>
+                
+                <div class="modal-footer" style="margin-top: 15px; justify-content: space-between; display: flex; align-items: center;">
+                    <button class="btn-action btn-gray" onclick="clearAllExternalLayers()" style="border-radius:20px; font-size:11px; background-color:#6c757d;">Xóa hết lớp nền cũ</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-action btn-gray" onclick="$('#drive-browser-modal').removeClass('visible')" style="border-radius:20px;">Đóng</button>
+                        <button class="btn-action btn-blue" onclick="loadSelectedDriveFiles()" style="border-radius:20px; padding: 8px 18px;">NẠP LỚP ĐÃ CHỌN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="streetview-modal" class="modal-overlay">
+            <div class="modal-content">
+                <button class="modal-close-btn" onclick="toggleStreetViewModal(false)">×</button>
+                <h3>Google Street View Không Gian Thực</h3>
+                <div id="streetview-pano"></div>
+            </div>
+        </div>
+
+        <div id="ocr-modal" class="modal-overlay">
+            <div class="modal-content" style="max-width: 480px;">
+                <button class="modal-close-btn" onclick="toggleOcrModal(false)">×</button>
+                <h3>Trích xuất dữ liệu ảnh Timemark</h3>
+                
+                <div class="dropzone" id="dropzone">
+                    <p>Kéo thả hình ảnh mốc vào đây hoặc nhấp để duyệt file</p>
+                    <input type="file" id="fileInput" accept="image/*" style="display:none">
+                </div>
+
+                <div id="ocrResultSection" style="display:none;">
+                    <div class="main-coord-box">
+                        <span id="displayCoords" class="coord-val"></span>
+                        <div class="btn-ocr-group">
+                            <button id="copyCoordsBtn" class="btn-action btn-gray">Sao chép chuỗi</button>
+                            <a id="mapsLink" href="#" target="_blank" class="btn-action btn-blue">Xem trên Maps</a>
+                            <button id="saveOcrKmzDriveBtn" class="btn-action btn-green">Lưu Kho KMZ</button>
+                            <button id="downloadOcrKmzLocalBtn" class="btn-action btn-orange">Tải KMZ về máy</button>
+                        </div>
+                    </div>
+
+                    <table class="info-table">
+                        <tr><th>Tên Ảnh</th><td id="attr-imgname">-</td></tr>
+                        <tr><th>Thời gian</th><td id="attr-time">-</td></tr>
+                        <tr><th>Ngày tháng</th><td id="attr-date">-</td></tr>
+                        <tr><th>Địa chỉ</th><td id="attr-address">-</td></tr>
+                        <tr><th>Tọa độ GPS</th><td id="attr-gps">-</td></tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-action btn-gray" onclick="toggleOcrModal(false)" style="border-radius:20px;">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-large-image-modal" class="modal-overlay" onclick="if(event.target===this) this.classList.remove('visible');">
+            <div class="modal-content">
+                <button class="modal-close-btn" onclick="document.getElementById('view-large-image-modal').classList.remove('visible')">×</button>
+                <h3 id="large-image-title">Ảnh thực tế hiện trường</h3>
+                <div style="margin-top:10px;">
+                    <img id="large-image-display" src="" alt="Ảnh phóng lớn">
+                </div>
+            </div>
+        </div>
+
+        <div id="donate-modal" class="modal-overlay">
+            <div class="modal-content donate-modal-content">
+                <button class="modal-close-btn" onclick="document.getElementById('donate-modal').classList.remove('visible')">×</button>
+                <h2>Hỗ Trợ Em Ếch Xinh</h2>
+                <p>Em Ếch Xinh không thu phí sử dụng, không đặt quảng cáo làm gián đoạn mất tập trung.</p>
+                <p class="highlight">Nhưng Em Ếch Xinh cần chi phí để duy trì, bảo trì, nâng cấp.</p>
+                
+                <div class="support-option">
+                    <h4>Qua nền tảng Buy Me A Coffee</h4>
+                    <p>Bằng cách nhấn vào ly cafe góc dưới bên phải (nút ☕).</p>
+                </div>
+                
+                <div class="support-option">
+                    <h4>Chuyển khoản</h4>
+                    <p style="margin-top: 10px;">
+                        Ngân hàng: <strong>Vietinbank</strong><br>
+                        Số TK: <strong onclick="navigator.clipboard.writeText('104005489108'); showToast('Đã sao chép số tài khoản!', 'success')">104005489108 (Nhấn để sao chép)</strong><br>
+                        Chủ TK: <strong>Nguyễn Minh Khoa</strong><br>
+                        Nội dung chuyển khoản (gợi ý): <strong onclick="navigator.clipboard.writeText('Ung ho Ech Xinh'); showToast('Đã sao chép nội dung chuyển khoản!', 'success')">Ung ho Ech Xinh (Nhấn để sao chép)</strong>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="document.getElementById('donate-modal').classList.remove('visible')" style="padding: 8px 15px; border: 1px solid #ccc; border-radius: 20px; cursor: pointer;">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading-spinner"></div>
+        <div id="toast-notification"></div>
+        <canvas id="helperCanvas" style="display:none;"></canvas>
+
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.wms.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+        <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
+        <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+        <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+        
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAuRWIozMKFbaB82wW1NqRvBGcF8_q_fSg"></script>
+        
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <script src="data/GT_KV2_11_2.js"></script>
+        <script src="data/PThuDuc_3.js"></script>
+
+        <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzckg1oCmPyGiN24c_InJNXfo0kBZmPei8aqRDZFt8BBeXumJTo-Rjabo1o9iQ8Ga-w/exec';
+        const CLOUD_TREE_APP_URL = 'https://script.google.com/macros/s/AKfycbyIarwHrEIqU0Ih308ZRgkfXJi-LvBUcpqe8Ao33IA7L712tIHyltskoBHgAq_aMlijjQ/exec';
+
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[10.811760026465123,106.70929626999828],[10.862154776319636,106.80403573000173]]);
+        
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/qgis2web/qgis2web" target="_blank">Em</a> · <a href="https://leafletjs.com" title="A JS library for interactive maps">Ếch</a> · <a href="https://qgis.org">Xinh</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+
+        /* --- BỔ SUNG CÁC HÀM XỬ LÝ CHIA SẺ VỊ TRÍ & DẪN ĐƯỜNG HOÀN CHỈNH --- */
+        function copyLocationLink(lat, lng) {
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            navigator.clipboard.writeText(googleMapsUrl).then(() => {
+                showToast("Đã sao chép liên kết vị trí vào bộ nhớ tạm!", "success");
+            }).catch(() => {
+                showToast("Không thể sao chép tự động. Vui lòng thử lại.", "error");
+            });
+        }
+
+        function shareToGoogleMaps(lat, lng) {
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            navigator.clipboard.writeText(googleMapsUrl);
+            window.open(googleMapsUrl, '_blank');
+            showToast("Đã mở Google Maps & sao chép liên kết!", "info");
+        }
+
+        function navigateToCoords(lat, lng, isStartPoint = false) {
+            const coordStr = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            if (isStartPoint) {
+                document.getElementById('directions-start-input').value = coordStr;
+                extState.startCoord = L.latLng(lat, lng);
+                showToast("Đã chọn làm ĐIỂM XUẤT PHÁT", "info");
+            } else {
+                document.getElementById('directions-end-input').value = coordStr;
+                extState.endCoord = L.latLng(lat, lng);
+                if (extState.userGPSPosition && !document.getElementById('directions-start-input').value.trim()) {
+                    document.getElementById('directions-start-input').value = 'Vị trí của tôi';
+                }
+                showToast("Đã chọn làm ĐIỂM ĐẾN", "info");
+            }
+            toggleDirectionsModal(true);
+        }
+
+        function createLocationSharePopupHTML(title, lat, lng, extraDesc = "", isCurrentGPS = false) {
+            const latVal = typeof lat === 'number' ? lat.toFixed(6) : lat;
+            const lngVal = typeof lng === 'number' ? lng.toFixed(6) : lng;
+            return `
+                <div class="share-popup-box">
+                    <b style="color:var(--primary-color);">${title}</b><br>
+                    ${extraDesc ? `<span style="display:block; margin: 3px 0; color:#555;">${extraDesc}</span>` : ''}
+                    <span style="font-size:0.85em; color:#666;">Tọa độ: <b>${latVal}, ${lngVal}</b></span>
+                    <div class="share-btn-group">
+                        <button class="btn-share-action btn-share-copy" onclick="copyLocationLink(${latVal}, ${lngVal})" title="Sao chép link Google Maps">
+                            📋 Link
+                        </button>
+                        <button class="btn-share-action btn-share-gmaps" onclick="shareToGoogleMaps(${latVal}, ${lngVal})" title="Mở trên Google Maps">
+                            📍 Maps
+                        </button>
+                        <button class="btn-share-action btn-share-route" onclick="navigateToCoords(${latVal}, ${lngVal}, ${isCurrentGPS})" title="Dẫn đường đi ngay">
+                            🚗 Dẫn đường
+                        </button>
+                    </div>
+                </div>`;
+        }
+
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+
+        function addClassToPopupIfMedia(content, popup) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            var imgTd = tempDiv.querySelector('td img');
+            if (imgTd) {
+                var src = imgTd.getAttribute('src');
+                if (/\ Kahn\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() { popup.update(); }, 10);
+                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
+                    var audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    imgTd.parentNode.replaceChild(audio, imgTd);
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() { popup.setContent(tempDiv.innerHTML); popup.update(); }, 10);
+                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
+                    var video = document.createElement('video');
+                    video.controls = true;
+                    video.src = src;
+                    video.style.width = "400px";
+                    video.style.height = "300px";
+                    video.style.maxHeight = "60vh";
+                    video.style.maxWidth = "60vw";
+                    imgTd.parentNode.replaceChild(video, imgTd);
+                    popup._contentNode.classList.add('media');
+                    video.addEventListener('loadedmetadata', function() { popup.update(); });
+                    setTimeout(function() { popup.setContent(tempDiv.innerHTML); popup.update(); }, 10);
+                } else {
+                    popup._contentNode.classList.remove('media');
+                }
+            } else {
+                popup._contentNode.classList.remove('media');
+            }
+        }
+
+        var zoomControl = L.control.zoom({ position: 'topleft' }).addTo(map);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {}
+
+        map.createPane('pane_ContourLines');
+        map.getPane('pane_ContourLines').style.zIndex = 399; 
+        var layer_ContourLines = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_ContourLines', opacity: 0.6,
+        });
+
+        L.BingSatelliteLayer = L.TileLayer.extend({
+            getTileUrl: function (coords) {
+                var quadkey = '';
+                for (var i = coords.z; i > 0; i--) {
+                    var digit = 0;
+                    var mask = 1 << (i - 1);
+                    if ((coords.x & mask) !== 0) digit++;
+                    if ((coords.y & mask) !== 0) digit += 2;
+                    quadkey += digit;
+                }
+                return this._url.replace('{q}', quadkey);
+            }
+        });
+        L.bingSatelliteLayer = function (url, options) { return new L.BingSatelliteLayer(url, options); };
+
+        map.createPane('pane_BingSatellite_Map');
+        map.getPane('pane_BingSatellite_Map').style.zIndex = 399;
+        var layer_BingSatellite_Map = L.bingSatelliteLayer('https://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1', {
+            pane: 'pane_BingSatellite_Map', opacity: 1.0, attribution: '© Microsoft Bing Maps', minZoom: 1, maxZoom: 28
+        });
+
+        map.createPane('pane_GEHybrid_0');
+        map.getPane('pane_GEHybrid_0').style.zIndex = 400;
+        var layer_GEHybrid_0 = L.tileLayer('http://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}', {
+            pane: 'pane_GEHybrid_0', opacity: 1.0, attribution: '', minZoom: 1, maxZoom: 28, minNativeZoom: 0, maxNativeZoom: 30
+        });
+        map.addLayer(layer_GEHybrid_0);
+
+        map.createPane('pane_GoogleMaps_1');
+        map.getPane('pane_GoogleMaps_1').style.zIndex = 401;
+        var layer_GoogleMaps_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleMaps_1', opacity: 1.0, attribution: '', minZoom: 1, maxZoom: 28, minNativeZoom: 0, maxNativeZoom: 22
+        });
+
+        map.createPane('pane_Vietbando_Map');
+        map.getPane('pane_Vietbando_Map').style.zIndex = 402;
+        var layer_Vietbando_Map = L.tileLayer('http://images.vietbando.com/ImageLoader/GetImage.ashx?Ver=2016&LayerIds=VBD&Y={y}&X={x}&Level={z}', {
+            pane: 'pane_Vietbando_Map', opacity: 1.0, attribution: '© Vietbando', minZoom: 1, maxZoom: 28
+        });
+
+        map.createPane('pane_HCM_Raster_Map');
+        map.getPane('pane_HCM_Raster_Map').style.zIndex = 402;
+        var layer_HCM_Raster_Map = L.tileLayer('https://bando.tphcm.gov.vn/service/gisp/tile/raster/{z}/{x}/{y}', {
+            pane: 'pane_HCM_Raster_Map', opacity: 1.0, attribution: '© Bản đồ TP.HCM', minZoom: 1, maxZoom: 28
+        });
+
+        map.createPane('pane_GoogleTraffic_Traffic');
+        map.getPane('pane_GoogleTraffic_Traffic').style.zIndex = 405;
+        var layer_GoogleTraffic_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=h@159000000,traffic&hl=vi&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleTraffic_Traffic', opacity: 0.6, minZoom: 1, maxZoom: 28
+        });
+
+        map.createPane('pane_OpenWeatherPrecipitation');
+        map.getPane('pane_OpenWeatherPrecipitation').style.zIndex = 404;
+        var layer_OpenWeatherPrecipitation = L.tileLayer('https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=07634769a5de7a23837694d8813c38d4', {
+            pane: 'pane_OpenWeatherPrecipitation', opacity: 1.0, maxZoom: 18, maxNativeZoom: 8, className: 'radar-contrast-layer'
+        });
+
+        map.createPane('pane_HydroEstimatorRainfall_4');
+        map.getPane('pane_HydroEstimatorRainfall_4').style.zIndex = 401;
+        var layer_HydroEstimatorRainfall_4 = L.WMS.layer("https://realearth.ssec.wisc.edu/cgi-bin/mapserv?map=NESDIS-GHE-HourlyRainfall.map&version=1.3", "current", {
+            pane: 'pane_HydroEstimatorRainfall_4', format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: '',
+        });
+
+        map.createPane('pane_GloFAS_Flood');
+        map.getPane('pane_GloFAS_Flood').style.zIndex = 401;
+        var layer_GloFAS_Flood = L.WMS.layer("https://globalfloods-ows.ecmwf.int/glofas-ows/ows.py", "acc_3day", {
+            pane: 'pane_GloFAS_Flood', format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: '© GloFAS'
+        });
+
+        const himawariLayersData = [
+            { id: 'HIMAWARI_B01', name: 'Himawari B01 (Visible)', mapParam: 'HIMAWARI-B01.map' },
+            { id: 'HIMAWARI_B02', name: 'Himawari B02 (Visible)', mapParam: 'HIMAWARI-B02.map' },
+            { id: 'HIMAWARI_B03', name: 'Himawari B03 (Visible)', mapParam: 'HIMAWARI-B03.map' },
+            { id: 'HIMAWARI_B04', name: 'Himawari B04 (Snow, Ice & Cloud)', mapParam: 'HIMAWARI-B04.map' },
+            { id: 'HIMAWARI_B05', name: 'Himawari B05 (Snow, Ice & Cloud)', mapParam: 'HIMAWARI-B05.map' },
+            { id: 'HIMAWARI_B06', name: 'Himawari B06 (Snow, Ice & Cloud)', mapParam: 'HIMAWARI-B06.map' },
+            { id: 'HIMAWARI_B07', name: 'Himawari B07 (Fire & Heat)', mapParam: 'HIMAWARI-B07.map' },
+            { id: 'HIMAWARI_B07_FIRE', name: 'Himawari B07 FIRE (Fire & Heat)', mapParam: 'HIMAWARI-B07-FIRE.map' },
+            { id: 'HIMAWARI_B08', name: 'Himawari B08 (Water Vapor)', mapParam: 'HIMAWARI-B08.map' },
+            { id: 'HIMAWARI_B08_VAPR', name: 'Himawari B08 VAPR (Water Vapor)', mapParam: 'HIMAWARI-B08-VAPR.map' },
+            { id: 'HIMAWARI_B09', name: 'Himawari B09 (Water Vapor)', mapParam: 'HIMAWARI-B09.map' },
+            { id: 'HIMAWARI_B09_VAPR', name: 'Himawari B09 VAPR (Water Vapor)', mapParam: 'HIMAWARI-B09-VAPR.map' },
+            { id: 'HIMAWARI_B10', name: 'Himawari B10 (Water Vapor)', mapParam: 'HIMAWARI-B10.map' },
+            { id: 'HIMAWARI_B10_VAPR', name: 'Himawari B10 VAPR (Water Vapor)', mapParam: 'HIMAWARI-B10-VAPR.map' },
+            { id: 'HIMAWARI_B11', name: 'Himawari B11 (Water Vapor)', mapParam: 'HIMAWARI-B11.map' },
+            { id: 'HIMAWARI_B12', name: 'Himawari B12 (Atmospheric)', mapParam: 'HIMAWARI-B12.map' },
+            { id: 'HIMAWARI_B13', name: 'Himawari B13 (Infrared)', mapParam: 'HIMAWARI-B13.map' },
+            { id: 'HIMAWARI_B13_GRAD', name: 'Himawari B13 GRAD (Infrared)', mapParam: 'HIMAWARI-B13-GRAD.map' },
+            { id: 'HIMAWARI_B14', name: 'Himawari B14 (Infrared)', mapParam: 'HIMAWARI-B14.map' },
+            { id: 'HIMAWARI_B14_GRAD', name: 'Himawari B14 GRAD (Infrared)', mapParam: 'HIMAWARI-B14-GRAD.map' },
+            { id: 'HIMAWARI_B15', name: 'Himawari B15 (Infrared)', mapParam: 'HIMAWARI-B15.map' },
+            { id: 'HIMAWARI_B15_GRAD', name: 'Himawari B15 GRAD (Infrared)', mapParam: 'HIMAWARI-B15-GRAD.map' },
+            { id: 'HIMAWARI_B16', name: 'Himawari B16 (Atmospheric)', mapParam: 'HIMAWARI-B16.map' },
+            { id: 'HIMAWARI_airmass', name: 'Himawari Airmass (Hazards & Disasters)', mapParam: 'HIMAWARI-airmass.map' },
+            { id: 'HIMAWARI_ash', name: 'Himawari Ash (Hazards & Disasters)', mapParam: 'HIMAWARI-ash.map' },
+            { id: 'HIMAWARI_cloudtop', name: 'Himawari Cloudtop (Hazards & Disasters)', mapParam: 'HIMAWARI-cloudtop.map' },
+            { id: 'HIMAWARI_convection', name: 'Himawari Convection (Hazards & Disasters)', mapParam: 'HIMAWARI-convection.map' },
+            { id: 'HIMAWARI_day_microphysics_ahi', name: 'Himawari Day Microphysics (Hazards & Disasters)', mapParam: 'HIMAWARI-day-microphysics-ahi.map' },
+            { id: 'HIMAWARI_dust', name: 'Himawari Dust (Hazards & Disasters)', mapParam: 'HIMAWARI-dust.map' },
+            { id: 'HIMAWARI_fire_temperature_awips', name: 'Himawari Fire Temp (Hazards & Disasters)', mapParam: 'HIMAWARI-fire-temperature-awips.map' },
+            { id: 'HIMAWARI_fog', name: 'Himawari Fog (Hazards & Disasters)', mapParam: 'HIMAWARI-fog.map' },
+            { id: 'HIMAWARI_night_microphysics', name: 'Himawari Night Microphysics (Hazards & Disasters)', mapParam: 'HIMAWARI-night-microphysics.map' },
+            { id: 'HIMAWARI_true_color', name: 'Himawari True Color (Composite)', mapParam: 'HIMAWARI-true-color.map' },
+            { id: 'HIMAWARI_water_vapors2', name: 'Himawari Water Vapors 2 (Composite)', mapParam: 'HIMAWARI-water-vapors2.map' }
+        ];
+
+        var himawariLayers = {};
+        himawariLayersData.forEach(function(l) {
+            var paneName = 'pane_' + l.id;
+            map.createPane(paneName);
+            map.getPane(paneName).style.zIndex = 401;
+            himawariLayers[l.id] = L.WMS.layer("https://realearth.ssec.wisc.edu/cgi-bin/mapserv?map=" + l.mapParam + "&version=1.3", "current", {
+                pane: paneName, format: 'image/png', uppercase: true, transparent: true, continuousWorld : true, tiled: true, info_format: 'text/html', opacity: 0.55, identify: false, attribution: ''
+            });
+        });
+
+        map.createPane('pane_RainViewerRadar');
+        map.getPane('pane_RainViewerRadar').style.zIndex = 403;
+        var layer_RainViewerRadar = L.tileLayer('', {
+            pane: 'pane_RainViewerRadar', opacity: 0.6, attribution: '© RainViewer'
+        });
+
+        async function initRainViewerLayer() {
+            try {
+                const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+                if (!response.ok) return;
+                const data = await response.json();
+                if (data && data.radar && data.radar.past && data.radar.past.length > 0) {
+                    const latestRadar = data.radar.past[data.radar.past.length - 1];
+                    const tileUrl = `${data.host}${latestRadar.path}/256/{z}/{x}/{y}/7/1_0.png`;
+                    layer_RainViewerRadar.setUrl(tileUrl);
+                }
+            } catch (error) {
+                console.error('Lỗi khởi tạo RainViewer Radar API:', error);
+            }
+        }
+        initRainViewerLayer();
+
+        function pop_GT_KV2_11_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr><td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(String(feature.properties['id']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['Osm_id'] !== null ? autolinker.link(String(feature.properties['Osm_id']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['Code'] !== null ? autolinker.link(String(feature.properties['Code']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['fclass'] !== null ? autolinker.link(String(feature.properties['fclass']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(String(feature.properties['name']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['ref'] !== null ? autolinker.link(String(feature.properties['ref']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['oneway'] !== null ? autolinker.link(String(feature.properties['oneway']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['maxspeed'] !== null ? autolinker.link(String(feature.properties['maxspeed']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['layer'] !== null ? autolinker.link(String(feature.properties['layer']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['bridge'] !== null ? autolinker.link(String(feature.properties['bridge']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['tunnel'] !== null ? autolinker.link(String(feature.properties['tunnel']).toLocaleString()) : '') + '</td></tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) { addClassToPopupIfMedia(content, e.popup); });
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_GT_KV2_11_2_0() {
+            return {
+                pane: 'pane_GT_KV2_11_2', opacity: 1, color: 'rgba(150,8,8,1.0)', dashArray: '', lineCap: 'square', lineJoin: 'bevel', weight: 3, fillOpacity: 0, interactive: true,
+            }
+        }
+        map.createPane('pane_GT_KV2_11_2');
+        map.getPane('pane_GT_KV2_11_2').style.zIndex = 402;
+        var layer_GT_KV2_11_2 = new L.geoJson(json_GT_KV2_11_2, {
+            interactive: true, dataVar: 'json_GT_KV2_11_2', layerName: 'layer_GT_KV2_11_2', pane: 'pane_GT_KV2_11_2', onEachFeature: pop_GT_KV2_11_2, style: style_GT_KV2_11_2_0,
+        });
+        bounds_group.addLayer(layer_GT_KV2_11_2);
+
+        function pop_PThuDuc_3(feature, layer) {
+            var popupContent = '<table>\
+                    <tr><td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(String(feature.properties['id']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(String(feature.properties['Name']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['descriptio'] !== null ? autolinker.link(String(feature.properties['descriptio']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['timestamp'] !== null ? autolinker.link(String(feature.properties['timestamp']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['begin'] !== null ? autolinker.link(String(feature.properties['begin']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['end'] !== null ? autolinker.link(String(feature.properties['end']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['altitudeMo'] !== null ? autolinker.link(String(feature.properties['altitudeMo']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['tessellate'] !== null ? autolinker.link(String(feature.properties['tessellate']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['extrude'] !== null ? autolinker.link(String(feature.properties['extrude']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['visibility'] !== null ? autolinker.link(String(feature.properties['visibility']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['drawOrder'] !== null ? autolinker.link(String(feature.properties['drawOrder']).toLocaleString()) : '') + '</td></tr>\
+                    <tr><td colspan="2">' + (feature.properties['icon'] !== null ? autolinker.link(String(feature.properties['icon']).toLocaleString()) : '') + '</td></tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) { addClassToPopupIfMedia(content, e.popup); });
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_PThuDuc_3_0() {
+            return {
+                pane: 'pane_PThuDuc_3', opacity: 1, color: 'rgba(150,8,8,1.0)', dashArray: '6.0,12.0', lineCap: 'square', lineJoin: 'bevel', weight: 6.0, fillOpacity: 0, interactive: false,
+            }
+        }
+        map.createPane('pane_PThuDuc_3');
+        map.getPane('pane_PThuDuc_3').style.zIndex = 403;
+        var layer_PThuDuc_3 = new L.geoJson(json_PThuDuc_3, {
+            interactive: false, dataVar: 'json_PThuDuc_3', layerName: 'layer_PThuDuc_3', pane: 'pane_PThuDuc_3', onEachFeature: pop_PThuDuc_3, style: style_PThuDuc_3_0,
+        });
+        bounds_group.addLayer(layer_PThuDuc_3);
+
+        var layer_EQ_Tourism2026 = L.featureGroup();
+        var layer_VN_2026 = L.featureGroup();
+        map.addLayer(layer_VN_2026); 
+
+        var layerCloudTreesCluster = L.markerClusterGroup({
+            disableClusteringAtZoom: 15,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false
+        });
+        map.addLayer(layerCloudTreesCluster); 
+
+        function parseCloudCoordinate(coordStr) {
+            if (!coordStr) return NaN;
+            let normalized = coordStr.toString().replace(',', '.');
+            return parseFloat(normalized);
+        }
+
+        function convertDriveLink(url) {
+            if (!url || typeof url !== 'string') return '';
+            url = url.trim();
+            if (url.startsWith('data:image')) return url;
+            let driveId = '';
+            let matchD = url.match(/\/file\/d\/([a-zA-Z0-9_-]{25,})/);
+            let matchId = url.match(/[?&] id=([a-zA-Z0-9_-]{25,})/);
+            if (matchD && matchD[1]) driveId = matchD[1];
+            else if (matchId && matchId[1]) driveId = matchId[1];
+            else if (url.length >= 25 && !url.includes('/') && !url.includes('.')) driveId = url;
+            if (driveId) return 'https://lh3.googleusercontent.com/d/' + driveId;
+            return url;
+        }
+
+        async function loadCloudTrees() {
+            layerCloudTreesCluster.clearLayers();
+            try {
+                const response = await fetch(CLOUD_TREE_APP_URL, { method: 'GET', redirect: 'follow' });
+                if (!response.ok) throw new Error("Mạng lỗi");
+                const result = await response.json();
+                if (result.status === "success" && result.data && result.data.length > 0) {
+                    let validCount = 0;
+                    result.data.forEach(tree => {
+                        const coordXVal = tree.coordX || tree.CoordX || tree.COORDX || '';
+                        const coordYVal = tree.coordY || tree.CoordY || tree.COORDY || '';
+                        const lng = parseCloudCoordinate(coordXVal);
+                        const lat = parseCloudCoordinate(coordYVal);
+
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            validCount++;
+                            const maSoCayHienThi = tree.masocay || tree.MaSoCay || tree.MASOCAY || tree.masốcây || '-';
+                            const loaiCayHienThi = tree.species || tree.Species || tree.SPECIES || tree.loaicay || tree.LoaiCay || 'Chưa rõ';
+                            const tuyenDuongHienThi = tree.street_park || tree.Street_park || tree.STREET_PARK || tree.tenduong || '-';
+                            const tinhTrangHienThi = tree.nho || tree.Nho || tree.NHO || tree.tinhtrang || 'Bình thường';
+                            
+                            const linkAnh1 = convertDriveLink(tree.img1 || tree.Img1 || tree.IMG1 || tree.anh1 || tree.Anh1 || '');
+                            const linkAnh2 = convertDriveLink(tree.img2 || tree.Img2 || tree.IMG2 || tree.anh2 || tree.Anh2 || '');
+
+                            var marker = L.circleMarker([lat, lng], {
+                                radius: 6, fillColor: '#43a047', color: '#ffffff', weight: 1.5, opacity: 1, fillOpacity: 0.9
+                            });
+
+                            let htmlGallery = `<div class="tree-gallery">`;
+                            if (linkAnh1 && linkAnh1.startsWith('http')) {
+                                htmlGallery += `<div class="tree-thumb-wrapper"><img src="${linkAnh1}" class="tree-thumb" onclick="openLargeImageModal('Ảnh Cây Xanh','${linkAnh1}')" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'no-img-text\\'>Lỗi tải ảnh</div>'"></div>`;
+                            } else {
+                                htmlGallery += `<div class="tree-thumb-wrapper"><div class="no-img-text">Không có ảnh</div></div>`;
+                            }
+                            if (linkAnh2 && linkAnh2.startsWith('http')) {
+                                htmlGallery += `<div class="tree-thumb-wrapper"><img src="${linkAnh2}" class="tree-thumb" onclick="openLargeImageModal('Ảnh Cây Xanh','${linkAnh2}')" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'no-img-text\\'>Lỗi tải ảnh</div>'"></div>`;
+                            } else {
+                                htmlGallery += `<div class="tree-thumb-wrapper"><div class="no-img-text">Không có ảnh</div></div>`;
+                            }
+                            htmlGallery += `</div>`;
+
+                            const popupText = `<div class="tree-popup-container">
+                                                <b class="tree-popup-title">🌳 Cây Xanh</b>
+                                                <b>Mã số cây:</b> ${maSoCayHienThi}<br>
+                                                <b>Loài cây:</b> ${loaiCayHienThi}<br>
+                                                <b>Tuyến đường:</b> ${tuyenDuongHienThi}<br>
+                                                <b>Tình trạng:</b> ${tinhTrangHienThi}
+                                                ${htmlGallery}
+                                                <div class="share-btn-group">
+                                                    <button class="btn-share-action btn-share-route" onclick="navigateToCoords(${lat}, ${lng}, false)">🚗 Dẫn đường đến cây</button>
+                                                </div>
+                                              </div>`;
+                            marker.bindPopup(popupText);
+                            layerCloudTreesCluster.addLayer(marker);
+                        }
+                    });
+                    showToast(`Đã đồng bộ hiển thị ${validCount} cây xanh thu thập.`, "success");
+                }
+            } catch (err) {
+                console.error("Lỗi tích hợp cây xanh: ", err);
+                showToast("Không thể nạp dữ liệu lớp cây xanh thu thập.", "error");
+            }
+        }
+
+        var externalLayersNode = {
+            label: '<b>Dữ liệu ngoại vi:</b>',
+            children: []
+        };
+
+        var overlaysTree = [
+            {label: '<b>Dữ liệu Khảo sát:</b>', children: [
+                {label: "Cây Xanh", layer: layerCloudTreesCluster},
+                {label: "KV2", layer: layer_GT_KV2_11_2},
+                {label: "Phường Thủ Đức", layer: layer_PThuDuc_3},
+                {label: "EQ_Tourism2026", layer: layer_EQ_Tourism2026},
+                {label: "VN_2026", layer: layer_VN_2026}
+            ]},
+            {label: '<b>Tham khảo:</b>', children: [
+                {label: "Mật độ lưu thông", layer: layer_GoogleTraffic_1},
+                {label: "Rain Viewer HD", layer: layer_RainViewerRadar},
+                {label: "Open Weather", layer: layer_OpenWeatherPrecipitation},
+                {label: "GloFAS Flood (Global Warning)", layer: layer_GloFAS_Flood},
+                {label: "Hydro Estimator Rainfall", layer: layer_HydroEstimatorRainfall_4},
+                {label: "Himawari B01 (Visible)", layer: himawariLayers['HIMAWARI_B01']},
+                {label: "Himawari B02 (Visible)", layer: himawariLayers['HIMAWARI_B02']},
+                {label: "Himawari B03 (Visible)", layer: himawariLayers['HIMAWARI_B03']},
+                {label: "Himawari B04 (Snow/Ice/Cloud)", layer: himawariLayers['HIMAWARI_B04']},
+                {label: "Himawari B05 (Snow/Ice/Cloud)", layer: himawariLayers['HIMAWARI_B05']},
+                {label: "Himawari B06 (Snow/Ice/Cloud)", layer: himawariLayers['HIMAWARI_B06']},
+                {label: "Himawari B07 (Fire & Heat)", layer: himawariLayers['HIMAWARI_B07']},
+                {label: "Himawari B07 FIRE (Fire & Heat)", layer: himawariLayers['HIMAWARI_B07_FIRE']},
+                {label: "Himawari B08 (Water Vapor)", layer: himawariLayers['HIMAWARI_B08']},
+                {label: "Himawari B08 VAPR (Water Vapor)", layer: himawariLayers['HIMAWARI_B08_VAPR']},
+                {label: "Himawari B09 (Water Vapor)", layer: himawariLayers['HIMAWARI_B09']},
+                {label: "Himawari B09 VAPR (Water Vapor)", layer: himawariLayers['HIMAWARI_B09_VAPR']},
+                {label: "Himawari B10 (Water Vapor)", layer: himawariLayers['HIMAWARI_B10']},
+                {label: "Himawari B10 VAPR (Water Vapor)", layer: himawariLayers['HIMAWARI_B10_VAPR']},
+                {label: "Himawari B11 (Water Vapor)", layer: himawariLayers['HIMAWARI_B11']},
+                {label: "Himawari B12 (Atmospheric)", layer: himawariLayers['HIMAWARI_B12']},
+                {label: "Himawari B13 (Infrared)", layer: himawariLayers['HIMAWARI_B13']},
+                {label: "Himawari B13 GRAD (Infrared)", layer: himawariLayers['HIMAWARI_B13_GRAD']},
+                {label: "Himawari B14 (Infrared)", layer: himawariLayers['HIMAWARI_B14']},
+                {label: "Himawari B14 GRAD (Infrared)", layer: himawariLayers['HIMAWARI_B14_GRAD']},
+                {label: "Himawari B15 (Infrared)", layer: himawariLayers['HIMAWARI_B15']},
+                {label: "Himawari B15 GRAD (Infrared)", layer: himawariLayers['HIMAWARI_B15_GRAD']},
+                {label: "Himawari B16 (Atmospheric)", layer: himawariLayers['HIMAWARI_B16']},
+                {label: "Himawari airmass (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_airmass']},
+                {label: "Himawari ash (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_ash']},
+                {label: "Himawari cloudtop (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_cloudtop']},
+                {label: "Himawari convection (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_convection']},
+                {label: "Himawari day microphysics", layer: himawariLayers['HIMAWARI_day_microphysics_ahi']},
+                {label: "Himawari dust (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_dust']},
+                {label: "Himawari fire temperature", layer: himawariLayers['HIMAWARI_fire_temperature_awips']},
+                {label: "Himawari fog (Hazards/Disasters)", layer: himawariLayers['HIMAWARI_fog']},
+                {label: "Himawari night microphysics", layer: himawariLayers['HIMAWARI_night_microphysics']},
+                {label: "Himawari true color (Composite)", layer: himawariLayers['HIMAWARI_true_color']},
+                {label: "Himawari water vapors 2 (Composite)", layer: himawariLayers['HIMAWARI_water_vapors2']}
+            ]},
+            externalLayersNode, 
+			{label: '<b>Bản đồ nền:</b>', children: [
+                {label: "Bản đồ Vietbando", layer: layer_Vietbando_Map},
+                {label: "Bản đồ Raster TP.HCM", layer: layer_HCM_Raster_Map},
+                {label: "Google Maps", layer: layer_GoogleMaps_1},
+                {label: "Google Satellite Hybrid", layer: layer_GEHybrid_0},
+                {label: "Bản đồ vệ tinh Bing Maps", layer: layer_BingSatellite_Map},
+                {label: "Bản đồ địa hình (Contour)", layer: layer_ContourLines}
+			]}
+        ];
+        
+        var lay = L.control.layers.tree(null, overlaysTree, { collapsed: true });
+        lay.addTo(map);
+        setBounds();
+
+        const extState = {
+            googleApiKey: 'AIzaSyAuRWIozMKFbaB82wW1NqRvBGcF8_q_fSg', 
+            openWeatherApiKey: '07634769a5de7a23837694d8813c38d4', 
+            searchMarker: null,
+            ocrMarker: null,
+            userGPSPosition: null,
+            routingControl: null,
+            lastWeatherData: null,
+            currentWeatherChartInstance: null,
+            kmzIndividualLayers: [],
+            streetViewActive: false,
+            panorama: null,
+            
+            isPickingStart: false,
+            isPickingEnd: false,
+            startCoord: null,
+            endCoord: null,
+            currentActiveRouteGeo: null,
+            currentActiveInstructions: null,
+            eqTourismLoaded: false,
+            currentOcrData: {
+                imgName: "",
+                base64: "",
+                lat: null,
+                lng: null,
+                time: "",
+                date: "",
+                address: ""
+            }
+        };
+
+        var drawnItems = new L.FeatureGroup().addTo(map);
+        
+        var drawMarkerHandler = new L.Draw.Marker(map, {
+            icon: L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            })
+        });
+        
+        var drawLineHandler = new L.Draw.Polyline(map, {
+            shapeOptions: { color: '#007bff', weight: 4 },
+            metric: true,
+            feet: false,
+            nautic: false,
+            repeatMode: false,
+            touchExtend: true
+        });
+
+        var drawPolyHandler = new L.Draw.Polygon(map, {
+            shapeOptions: { color: '#28a745', weight: 3, fillOpacity: 0.2 }, metric: true
+        });
+
+        var activeCurrentHandler = null;
+
+        function showDrawHelperUI(handler, isLineOrPoly) {
+            activeCurrentHandler = handler;
+            if (isLineOrPoly) {
+                $('#draw-edit-overlay-container').show();
+                $('#btn-draw-undo-node').show();
+            } else {
+                $('#draw-edit-overlay-container').show();
+                $('#btn-draw-undo-node').hide();
+            }
+        }
+
+        function hideDrawHelperUI() {
+            $('#draw-edit-overlay-container').hide();
+            activeCurrentHandler = null;
+        }
+
+        $('#btn-draw-undo-node').click(function(e) {
+            e.preventDefault();
+            if (activeCurrentHandler && typeof activeCurrentHandler.deleteLastVertex === 'function') {
+                activeCurrentHandler.deleteLastVertex();
+                showToast("Đã xóa nút vừa chấm gần nhất.", "info");
+            }
+        });
+
+        $('#btn-draw-cancel-all').click(function(e) {
+            e.preventDefault();
+            if (activeCurrentHandler) {
+                activeCurrentHandler.disable();
+                $('#custom-draw-marker-btn, #custom-draw-line-btn, #custom-draw-poly-btn').removeClass('btn-active');
+                hideDrawHelperUI();
+                showToast("Đã hủy thao tác vẽ hiện tại.", "info");
+            }
+        });
+
+        $('#custom-draw-marker-btn').click(function(e) {
+            e.preventDefault(); drawLineHandler.disable(); drawPolyHandler.disable();
+            $(this).toggleClass('btn-active'); $('#custom-draw-line-btn, #custom-draw-poly-btn').removeClass('btn-active');
+            if ($(this).hasClass('btn-active')) { 
+                drawMarkerHandler.enable(); 
+                showDrawHelperUI(drawMarkerHandler, false);
+                showToast("Bắt đầu chọn vị trí. Nhấp vào bản đồ để tạo điểm mốc.", "info"); 
+            } else { 
+                drawMarkerHandler.disable(); 
+                hideDrawHelperUI();
+            }
+        });
+
+        $('#custom-draw-line-btn').click(function(e) {
+            e.preventDefault(); drawMarkerHandler.disable(); drawPolyHandler.disable();
+            $(this).toggleClass('btn-active'); $('#custom-draw-marker-btn, #custom-draw-poly-btn').removeClass('btn-active');
+            if ($(this).hasClass('btn-active')) { 
+                drawLineHandler.enable(); 
+                showDrawHelperUI(drawLineHandler, true);
+                showToast("Bắt đầu vẽ đường. Nhấp đúp hoặc bấm nút phụ để hiệu chỉnh.", "info"); 
+            } else { 
+                drawLineHandler.disable(); 
+                hideDrawHelperUI();
+            }
+        });
+
+        $('#custom-draw-poly-btn').click(function(e) {
+            e.preventDefault(); drawMarkerHandler.disable(); drawLineHandler.disable();
+            $(this).toggleClass('btn-active'); $('#custom-draw-marker-btn, #custom-draw-line-btn').removeClass('btn-active');
+            if ($(this).hasClass('btn-active')) { 
+                drawPolyHandler.enable(); 
+                showDrawHelperUI(drawPolyHandler, true);
+                showToast("Bắt đầu vẽ vùng. Nhấp điểm đầu để khép góc hoặc bấm nút phụ để sửa node.", "info"); 
+            } else { 
+                drawPolyHandler.disable(); 
+                hideDrawHelperUI();
+            }
+        });
+
+        map.on(L.Draw.Event.CREATED, function (event) {
+            var layer = event.layer; var type = event.layerType; let popupContent = "";
+            if (type === 'marker') {
+                var latlng = layer.getLatLng();
+                popupContent = createLocationSharePopupHTML("📍 Điểm mốc vị trí đánh dấu", latlng.lat, latlng.lng, "", false);
+            } else if (type === 'polyline') {
+                var latlngs = layer.getLatLngs(); var distance = 0;
+                for (var i = 0; i < latlngs.length - 1; i++) { distance += latlngs[i].distanceTo(latlngs[i+1]); }
+                popupContent = `<b>Độ dài tuyến:</b> ${(distance >= 1000) ? (distance/1000).toFixed(2) + ' km' : distance.toFixed(1) + ' m'}`;
+            } else if (type === 'polygon') {
+                var latlngs = layer.getLatLngs()[0]; var area = L.GeometryUtil.geodesicArea(latlngs);
+                popupContent = `<b>Diện tích vùng:</b> ${(area >= 1000000) ? (area/1000000).toFixed(2) + ' km²' : area.toFixed(1) + ' m²'}`;
+            }
+            layer.bindPopup(popupContent).addTo(drawnItems); layer.openPopup();
+            $('#custom-draw-marker-btn, #custom-draw-line-btn, #custom-draw-poly-btn').removeClass('btn-active'); $('#custom-export-kml-btn').show();
+            hideDrawHelperUI();
+        });
+
+        $('#custom-export-kml-btn').click(function(e) {
+            e.preventDefault(); if (drawnItems.getLayers().length === 0) { showToast("Không tìm thấy dữ liệu tự vẽ nào để xuất.", "error"); return; }
+            $('#save-modal-title').text("Lưu dữ liệu đo vẽ"); $('#save-modal-desc-label').text("Mô tả nội dung đo vẽ:");
+            $('#kml-filename').val(""); 
+            $('#kml-description').val("");
+            $('#btn-confirm-save-drive').off('click').on('click', executeSaveDrawingsToDrive); $('#save-kml-modal').addClass('visible');
+        });
+
+        function executeSaveDrawingsToDrive() {
+            var fileName = $('#kml-filename').val().trim(); var description = $('#kml-description').val().trim() || "Không có mô tả chi tiết.";
+            
+            if (!fileName) { 
+                alert("Vui lòng nhập tên file theo cấu trúc gợi ý (Họ tên_Nội dung) để lưu trữ!"); 
+                return; 
+            }
+            
+            if (APPS_SCRIPT_URL.includes('THAY_URL_APPS_SCRIPT')) { alert("Bạn chưa cấu hình URL Apps Script!"); return; }
+            $('#save-modal-title').removeClass('visible'); toggleLoading(true);
+
+            let kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>${fileName}</name>\n<description><![CDATA[${description}]]></description>\n`;
+            drawnItems.eachLayer(function(layer) {
+                if (layer instanceof L.Marker) {
+                    let pt = layer.getLatLng();
+                    kml += `  <Placemark>\n    <name>Diem khao sat thuc dia</name>\n    <description><![CDATA[Mô tả: ${description}]]></description>\n    <Point>\n      <coordinates>${pt.lng},${pt.lat},0</coordinates>\n    </Point>\n  </Placemark>\n`;
+                } else if (layer instanceof L.Polyline && !(layer instanceof L.Polygon)) {
+                    kml += `  <Placemark>\n    <name>Duong do ve</name>\n    <description><![CDATA[Mô tả: ${description}]]></description>\n    <LineString>\n      <coordinates>\n`;
+                    layer.getLatLngs().forEach(pt => { kml += `        ${pt.lng},${pt.lat},0\n`; });
+                    kml += `      </coordinates>\n    </LineString>\n  </Placemark>\n`;
+                } else if (layer instanceof L.Polygon) {
+                    kml += `  <Placemark>\n    <name>Vung do dac thuc dia</name>\n    <description><![CDATA[Mô tả: ${description}]]></description>\n    <Polygon>\n      <outerBoundaryIs>\n        <LinearRing>\n          <coordinates>\n`;
+                    let pts = layer.getLatLngs()[0]; pts.forEach(pt => { kml += `            ${pt.lng},${pt.lat},0\n`; });
+                    kml += `            ${pts[0].lng},${pts[0].lat},0\n`; kml += `          </coordinates>\n        </LinearRing>\n      </outerBoundaryIs>\n    </Polygon>\n  </Placemark>\n`;
+                }
+            });
+            kml += `</Document>\n</kml>`; sendDataToAppsScript(fileName, kml);
+        }
+
+        function sendDataToAppsScript(fileName, contentPayload) {
+            fetch(APPS_SCRIPT_URL, {
+                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "saveFile", fileName: fileName, kmlContent: contentPayload })
+            })
+            .then(() => { toggleLoading(false); showToast("Đã gửi yêu cầu lưu file thành công!", "success"); })
+            .catch(err => { console.error(err); toggleLoading(false); showToast("Lỗi trong quá trình kết nối API gửi file.", "error"); });
+        }
+
+        function toggleLoading(isLoading) { document.getElementById('loading-spinner').style.display = isLoading ? 'block' : 'none'; }
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast-notification'); toast.textContent = msg; toast.className = 'show ' + type;
+            setTimeout(() => { toast.className = ''; }, 3000);
+        }
+
+        $('#custom-browse-drive-btn').click(function(e) {
+            e.preventDefault(); 
+            $('#drive-search-input').val(''); 
+            $('#drive-browser-modal').addClass('visible'); 
+            loadDriveFilesList();
+        });
+
+        function loadDriveFilesList() {
+            $('#drive-files-list').html('<p style="text-align:center; color:#888;">Đang kết nối thư mục dữ liệu...</p>');
+            
+            fetch(`${APPS_SCRIPT_URL}?action=listFiles`, { method: 'GET', redirect: 'follow' })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === "success" && data.files && data.files.length > 0) {
+                    let listHTML = "";
+                    data.files.forEach(file => {
+                        const isLoaded = extState.kmzIndividualLayers.some(l => l.name === file.name);
+                        listHTML += `
+                            <div class="drive-file-item">
+                                <label>
+                                    <input type="checkbox" class="drive-select-file" data-id="${file.id}" data-name="${file.name}" ${isLoaded ? 'checked' : ''}>
+                                    <svg style="width:20px; height:20px; fill:#1a73e8; flex-shrink:0;" viewBox="0 0 24 24"><path d="M6 2c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/></svg>
+                                    <span>${file.name}</span>
+                                </label>
+                            </div>`;
+                    });
+                    $('#drive-files-list').html(listHTML);
+                } else if (data.status === "error") {
+                    $('#drive-files-list').html(`<p style="text-align:center; color:#d32f2f; font-size:13px; padding: 10px;">Lỗi hệ thống: ${data.message}</p>`);
+                } else {
+                    $('#drive-files-list').html('<p style="text-align:center; color:#888; font-size:13px; padding: 10px;">Không tìm thấy tệp bản đồ (.kml, .kmz) nào trong thư mục này.</p>');
+                }
+            })
+            .catch(err => {
+                console.error(err); 
+                $('#drive-files-list').html('<p style="text-align:center; color:#d32f2f; font-size:13px; padding: 10px;">Không thể tải danh sách. Hãy kiểm tra cài đặt thư mục Google Drive.</p>');
+            });
+        }
+
+        async function autoLoadVN2026LayerFromDrive() {
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=listFiles`, { method: 'GET', redirect: 'follow' });
+                const data = await response.json();
+                if (data.status === "success" && data.files && data.files.length > 0) {
+                    const vn2026File = data.files.find(f => f.name.toLowerCase().includes('vn_2026'));
+                    if (vn2026File) {
+                        const fileResp = await fetch(`${APPS_SCRIPT_URL}?action=getFile&id=${vn2026File.id}`, { method: 'GET', redirect: 'follow' });
+                        const fileData = await fileResp.json();
+                        if (fileData.status === "success") {
+                            let dom; let kmzFiles = {};
+                            if (vn2026File.name.toLowerCase().endsWith('.kmz')) {
+                                const zip = await JSZip.loadAsync(fileData.content, {base64: true});
+                                const kmlFile = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
+                                if (kmlFile) {
+                                    dom = (new DOMParser()).parseFromString(await zip.file(kmlFile).async('string'), 'text/xml');
+                                    for (const relativePath of Object.keys(zip.files)) {
+                                        if (!zip.files[relativePath].dir && relativePath !== kmlFile) {
+                                            kmzFiles[relativePath] = await zip.files[relativePath].async('base64');
+                                        }
+                                    }
+                                }
+                            } else {
+                                dom = (new DOMParser()).parseFromString(fileData.content, 'text/xml');
+                            }
+                            if (dom) {
+                                parseAndPopulateLayerGroup(dom, layer_VN_2026, kmzFiles);
+                                showToast("Đã tự động hiển thị lớp VN_2026 từ Google Drive", "success");
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Không thể tự động nạp lớp VN_2026 từ Drive: ", err);
+            }
+        }
+
+        async function fetchAndLoadEQTourism2026() {
+            if (extState.eqTourismLoaded) {
+                map.zoomOut(1);
+                return;
+            }
+            toggleLoading(true);
+            showToast("Đang kết nối tải dữ liệu EQ_Tourism2026...", "info");
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=listFiles`, { method: 'GET', redirect: 'follow' });
+                const data = await response.json();
+                if (data.status === "success" && data.files && data.files.length > 0) {
+                    const targetFile = data.files.find(f => f.name.toLowerCase().includes('eq_tourism2026'));
+                    if (targetFile) {
+                        const fileResp = await fetch(`${APPS_SCRIPT_URL}?action=getFile&id=${targetFile.id}`, { method: 'GET', redirect: 'follow' });
+                        const fileData = await fileResp.json();
+                        if (fileData.status === "success") {
+                            let dom; let kmzFiles = {};
+                            if (targetFile.name.toLowerCase().endsWith('.kmz')) {
+                                const zip = await JSZip.loadAsync(fileData.content, {base64: true});
+                                const kmlFile = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
+                                if (kmlFile) {
+                                    dom = (new DOMParser()).parseFromString(await zip.file(kmlFile).async('string'), 'text/xml');
+                                    for (const relativePath of Object.keys(zip.files)) {
+                                        if (!zip.files[relativePath].dir && relativePath !== kmlFile) {
+                                            kmzFiles[relativePath] = await zip.files[relativePath].async('base64');
+                                        }
+                                    }
+                                }
+                            } else {
+                                dom = (new DOMParser()).parseFromString(fileData.content, 'text/xml');
+                            }
+                            if (dom) {
+                                parseAndPopulateLayerGroup(dom, layer_EQ_Tourism2026, kmzFiles);
+                                extState.eqTourismLoaded = true;
+                                map.zoomOut(1);
+                                showToast("Đã tải và hiển thị lớp EQ_Tourism2026 thành công!", "success");
+                            }
+                        }
+                    } else {
+                        showToast("Không tìm thấy file EQ_Tourism2026.kmz trên kho Drive.", "error");
+                    }
+                }
+            } catch (err) {
+                console.error("Lỗi khi nạp lớp EQ_Tourism2026: ", err);
+                showToast("Lỗi kết nối khi nạp lớp EQ_Tourism2026.", "error");
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        map.on('overlayadd', function(e) {
+            if (e.layer === layer_EQ_Tourism2026) {
+                fetchAndLoadEQTourism2026();
+            }
+        });
+
+        $('#drive-search-input').on('keyup', function() {
+            var keyword = $(this).val().toLowerCase().trim();
+            $('.drive-file-item').each(function() {
+                var fileName = $(this).find('span').text().toLowerCase();
+                if (fileName.indexOf(keyword) > -1) { $(this).show(); } else { $(this).hide(); }
+            });
+        });
+
+        function clearAllExternalLayers() {
+            if (extState.kmzIndividualLayers.length === 0) { showToast("Không có lớp ngoại vi nào đang mở.", "info"); return; }
+            extState.kmzIndividualLayers.forEach(l => map.removeLayer(l.layer));
+            extState.kmzIndividualLayers = []; externalLayersNode.children = []; refreshLayerTreeControl();
+            $('.drive-select-file').prop('checked', false); showToast("Đã xóa sạch toàn bộ các lớp bản đồ ngoại vi.", "success");
+        }
+
+        function getAdaptiveBoundsPadding() {
+            return window.innerWidth <= 767 ? { paddingTopLeft: [15, 90], paddingBottomRight: [15, 25] } : { paddingTopLeft: [45, 85], paddingBottomRight: [45, 45] };
+        }
+
+        async function loadSelectedDriveFiles() {
+            const selectedCheckboxes = $('.drive-select-file:checked');
+            if (selectedCheckboxes.length === 0) {
+                showToast("Vui lòng tích chọn ít nhất một lớp bản đồ để nạp!", "error");
+                return;
+            }
+            
+            $('#drive-browser-modal').removeClass('visible');
+            toggleLoading(true);
+            
+            const combinedBounds = L.latLngBounds();
+            let successCount = 0;
+            
+            for (let i = 0; i < selectedCheckboxes.length; i++) {
+                const cb = $(selectedCheckboxes[i]);
+                const fileId = cb.data('id');
+                const fileName = cb.data('name');
+                
+                if (extState.kmzIndividualLayers.some(l => l.name === fileName)) {
+                    successCount++;
+                    const existingLayer = extState.kmzIndividualLayers.find(l => l.name === fileName).layer;
+                    if (existingLayer.getBounds && typeof existingLayer.getBounds === 'function' && existingLayer.getBounds().isValid()) {
+                        combinedBounds.extend(existingLayer.getBounds());
+                    }
+                    continue;
+                }
+                
+                try {
+                    const response = await fetch(`${APPS_SCRIPT_URL}?action=getFile&id=${fileId}`, { method: 'GET', redirect: 'follow' });
+                    const data = await response.json();
+                    
+                    if(data.status === "success") {
+                        let dom; let kmzFiles = {};
+                        if (fileName.toLowerCase().endsWith('.kmz')) {
+                            const zip = await JSZip.loadAsync(data.content, {base64: true});
+                            const kmlFile = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
+                            if (!kmlFile) throw new Error("Không tìm thấy dữ liệu cấu trúc KML bên trong.");
+                            dom = (new DOMParser()).parseFromString(await zip.file(kmlFile).async('string'), 'text/xml');
+                            
+                            const fileKeys = Object.keys(zip.files);
+                            for (const relativePath of fileKeys) {
+                                const zipEntry = zip.files[relativePath];
+                                if (!zipEntry.dir && relativePath !== kmlFile) {
+                                    kmzFiles[relativePath] = await zipEntry.async('base64');
+                                }
+                            }
+                        } else {
+                            dom = (new DOMParser()).parseFromString(data.content, 'text/xml');
+                        }
+                        
+                        processAndAppendParsedLayer(dom, fileName, kmzFiles, combinedBounds, false);
+                        successCount++;
+                    }
+                } catch (err) {
+                    console.error(`Lỗi khi nạp file ${fileName}:`, err);
+                }
+            }
+            
+            refreshLayerTreeControl();
+            if (combinedBounds.isValid()) {
+                const pad = getAdaptiveBoundsPadding();
+                map.fitBounds(combinedBounds, { paddingTopLeft: pad.paddingTopLeft, paddingBottomRight: pad.paddingBottomRight, animate: true, duration: 1.2 });
+            }
+            
+            toggleLoading(false);
+            showToast(`Đã nạp thành công đồng thời ${successCount} lớp dữ liệu bản đồ!`, "success");
+        }
+
+        function parseAndPopulateLayerGroup(dom, targetLayerGroup, kmzFiles = {}) {
+            const groundOverlays = dom.getElementsByTagName('GroundOverlay'); 
+            const hasGroundOverlays = groundOverlays.length > 0;
+            let layerGroup = targetLayerGroup || (hasGroundOverlays ? L.layerGroup() : L.markerClusterGroup({ disableClusteringAtZoom: 16 }));
+
+            for (let i = 0; i < groundOverlays.length; i++) {
+                const overlay = groundOverlays[i];
+                const hrefElement = overlay.getElementsByTagName('href')[0] || overlay.getElementsByTagName('Icon')[0]?.getElementsByTagName('href')[0];
+                const href = hrefElement ? hrefElement.textContent.trim() : null;
+                const latLonBox = overlay.getElementsByTagName('LatLonBox')[0];
+
+                if (href && latLonBox) {
+                    const parseCoord = (tagName) => {
+                        const val = latLonBox.getElementsByTagName(tagName)[0]?.textContent;
+                        return val ? parseFloat(val.trim()) : NaN;
+                    };
+
+                    const south = parseCoord('south');
+                    const north = parseCoord('north');
+                    const east = parseCoord('east');
+                    const west = parseCoord('west');
+
+                    if (!isNaN(south) && !isNaN(north) && !isNaN(east) && !isNaN(west)) {
+                        const bounds = [[south, west], [north, east]];
+                        let cleanHref = href.replace(/^(\.\.\/|\.\/)/, '');
+                        let imageUrl = href;
+
+                        if (kmzFiles[cleanHref]) {
+                            let ext = cleanHref.split('.').pop().toLowerCase();
+                            if (ext === 'jpg') ext = 'jpeg';
+                            imageUrl = `data:image/${ext};base64,${kmzFiles[cleanHref]}`;
+                        } else {
+                            let baseName = cleanHref.split('/').pop();
+                            let foundKey = Object.keys(kmzFiles).find(k => k.endsWith(baseName) || baseName.endsWith(k));
+                            if (foundKey) {
+                                let ext = foundKey.split('.').pop().toLowerCase();
+                                if (ext === 'jpg') ext = 'jpeg';
+                                imageUrl = `data:image/${ext};base64,${kmzFiles[foundKey]}`;
+                            }
+                        }
+
+                        const imgOverlay = L.imageOverlay(imageUrl, bounds, { opacity: 1.0 });
+                        imgOverlay.addTo(layerGroup);
+                    }
+                }
+            }
+
+            const iconStyles = {}; const styleMaps = {}; const styles = dom.getElementsByTagName('Style');
+            for (const style of styles) {
+                const styleId = style.getAttribute('id'); const iconHrefElement = style.getElementsByTagName('IconStyle')[0]?.getElementsByTagName('Icon')[0]?.getElementsByTagName('href')[0];
+                if (styleId && iconHrefElement) {
+                    let iconHref = iconHrefElement.textContent.trim(); let cleanHref = iconHref.replace(/^(\.\.\/|\.\/)/, ''); let finalIconUrl = "";
+                    if (kmzFiles[cleanHref]) { 
+                        let ext = cleanHref.split('.').pop().toLowerCase(); 
+                        if(ext === 'jpg') ext = 'jpeg';
+                        finalIconUrl = `data:image/${ext};base64,${kmzFiles[cleanHref]}`; 
+                    } 
+                    else {
+                        let baseName = cleanHref.split('/').pop(); let foundKey = Object.keys(kmzFiles).find(k => k.endsWith(baseName) || baseName.endsWith(k));
+                        if (foundKey) { 
+                            let ext = foundKey.split('.').pop().toLowerCase(); 
+                            if(ext === 'jpg') ext = 'jpeg';
+                            finalIconUrl = `data:image/${ext};base64,${kmzFiles[foundKey]}`; 
+                        } 
+                        else if (iconHref.startsWith('http')) { finalIconUrl = iconHref; } 
+                        else { finalIconUrl = getCustomIcon(baseName.split('.')[0]).options.iconUrl; }
+                    }
+                    iconStyles[`#${styleId}`] = L.icon({ iconUrl: finalIconUrl, iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+                }
+            }
+            const kmlStyleMaps = dom.getElementsByTagName('StyleMap');
+            for (const styleMap of kmlStyleMaps) { 
+                const styleMapId = styleMap.getAttribute('id'); const pairs = styleMap.getElementsByTagName('Pair');
+                for (let j = 0; j < pairs.length; j++) {
+                    let key = pairs[j].getElementsByTagName('key')[0]?.textContent;
+                    if (key === 'normal') { let normalStyleUrl = pairs[j].getElementsByTagName('styleUrl')[0]?.textContent; if (styleMapId && normalStyleUrl) styleMaps[`#${styleMapId}`] = normalStyleUrl; break; }
+                }
+            }
+
+            var geoJsonData = toGeoJSON.kml(dom);
+            L.geoJSON(geoJsonData, {
+                style: (f) => f.properties.styleUrl && f.properties.styleUrl.includes('LineString') ? { color: '#007BFF', weight: 4 } : {},
+                pointToLayer: function (f, latlng) {
+                    let o = { pane: 'popupPane' };
+                    let sUrl = f.properties.styleUrl; 
+                    if (sUrl) { 
+                        if (styleMaps[sUrl]) sUrl = styleMaps[sUrl]; 
+                        if (iconStyles[sUrl]) o.icon = iconStyles[sUrl]; 
+                    }
+                    if (!o.icon) {
+                        o.icon = L.icon({ 
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', 
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', 
+                            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] 
+                        });
+                    }
+                    return L.marker(latlng, o);
+                },
+                onEachFeature: function(f, layer) {
+                    let c = ""; 
+                    if (f.properties.name) c += `<b>${f.properties.name}</b>`; 
+                    if (f.properties.description) {
+                        let desc = f.properties.description;
+                        for (const relativePath in kmzFiles) {
+                            if (desc.includes(relativePath)) {
+                                let ext = relativePath.split('.').pop().toLowerCase();
+                                if(ext === 'jpg') ext = 'jpeg';
+                                desc = desc.replace(new RegExp(relativePath, 'g'), `data:image/${ext};base64,${kmzFiles[relativePath]}`);
+                            }
+                        }
+                        c += `<br>${desc}`;
+                    }
+                    if (c) {
+                        layer.bindPopup(c, { maxWidth: 320 });
+                        layer.on('popupopen', function(e) {
+                            $(e.popup._contentNode).find('img').css({'cursor': 'pointer', 'width': '100%', 'max-width': '260px'}).attr('title', 'Nhấn để phóng to ảnh').off('click').on('click', function() {
+                                openLargeImageModal(f.properties.name, $(this).attr('src'));
+                            });
+                        });
+                    }
+                    layerGroup.addLayer(layer);
+                }
+            });
+        }
+
+        function debounce(func, wait) { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), wait); }; }
+        function toggleDirectionsModal(show) { $('#directions-modal').toggleClass('visible', show); if(!show) { resetMapPickers(); } }
+        function toggleOcrModal(show) { $('#ocr-modal').toggleClass('visible', show); }
+        function toggleStreetViewModal(show) { $('#streetview-modal').toggleClass('visible', show); if(!show) { extState.streetViewActive = false; $('#custom-streetview-btn').removeClass('btn-active'); } }
+        function hideWeatherInfoPanel() { document.getElementById('weather-info').classList.add('hidden'); document.getElementById('info-btn').classList.remove('btn-active'); }
+        
+        function toggleWeatherInfo() { 
+            if (extState.lastWeatherData) { 
+                const isHidden = document.getElementById('weather-info').classList.toggle('hidden'); 
+                $('#info-btn').toggleClass('btn-active', !isHidden); 
+            } else { 
+                showToast('Vui lòng chọn địa điểm hoặc click bản đồ để hệ thống ghi nhận vị trí trước khi xem thời tiết.', 'info'); 
+            } 
+        }
+        $('#info-btn').click(toggleWeatherInfo);
+
+        async function getWeather(lat, lng, locationName) {
+          try {
+            const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lng}&appid=${extState.openWeatherApiKey}&units=metric&lang=vi&cnt=40`;
+            const forecastResponse = await fetch(forecastUrl); const forecastData = await forecastResponse.json();
+            if (!forecastResponse.ok || !forecastData.list?.length) throw new Error('Failed to fetch weather');
+            extState.lastWeatherData = forecastData; renderWeather(forecastData, locationName);
+          } catch (e) { console.error(e); document.getElementById('weather-info').innerHTML = `<div class="weather-header"><button class="weather-close-btn" onclick="hideWeatherInfoPanel()">×</button><span style="color:red;">Lỗi khi tải dữ liệu thời tiết.</span></div>`; }
+        }
+        
+        function renderWeather(forecastData, locationName) {
+            const current = forecastData.list[0]; const icon = `https://openweathermap.org/img/w/${current.weather[0].icon}.png`;
+            let weatherHTML = `<div class="weather-header"><button class="weather-close-btn" onclick="hideWeatherInfoPanel()">×</button><h3>Thời tiết: ${locationName}</h3></div>
+              <div class="current-weather-main"><img src="${icon}" alt="${current.weather[0].description}"><span>Bây giờ: ${current.main.temp.toFixed(1)}°C, ${current.weather[0].description}</span></div>
+              <p>Độ ẩm: ${current.main.humidity}% | Gió: ${current.wind.speed} m/s | Áp suất: ${current.main.pressure} hPa</p>
+              <div class="weather-tab-container">
+                 <button class="weather-tab-btn active" onclick="switchWeatherView('list')">📋 Danh sách</button>
+                 <button class="weather-tab-btn" onclick="switchWeatherView('rain')">🌧️ Đồ thị Mưa</button>
+                 <button class="weather-tab-btn" onclick="switchWeatherView('wind')">🌀 Hoa Gió</button>
+                 <button class="weather-tab-btn" onclick="switchWeatherView('humidity')">💧 Độ ẩm</button>
+                 <button class="weather-tab-btn" onclick="switchWeatherView('pressure')">📈 Áp suất</button>
+              </div>
+              <div id="weather-chart-area" class="weather-chart-wrapper" style="display:none;"><canvas id="weatherCanvasNode"></canvas></div><div id="weather-list-area">`;
+            let lastDay = new Date().getDay();
+            for (const forecast of forecastData.list) {
+                const date = new Date(forecast.dt * 1000); const currentDate = date.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
+                const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }); const windSpeed = forecast.wind.speed;
+                const windDirection = getWindDirectionText(forecast.wind.deg); const pop = forecast.pop * 100; const description = forecast.weather[0].description; const temp = forecast.main.temp.toFixed(0);
+                if (date.getDay() !== lastDay) { weatherHTML += `<h4 style="margin-top: 12px; border-top: 1px solid #ddd; padding-top: 6px;">${currentDate}</h4>`; lastDay = date.getDay(); }
+                weatherHTML += `<div class="forecast-item"><span><strong>${time}:</strong> ${temp}°C, ${description}</span><span style="font-size: 0.85em; color: #666;">Gió: ${windSpeed}m/s (${windDirection}) | Mưa: ${pop.toFixed(0)}%</span></div>`;
+            }
+            weatherHTML += `</div>`; document.getElementById('weather-info').innerHTML = weatherHTML;
+        }
+
+        function getWindDirectionText(deg) {
+            if (deg > 337.5 || deg <= 22.5) return "Bắc"; if (deg > 22.5 && deg <= 67.5) return "Đông Bắc"; if (deg > 67.5 && deg <= 112.5) return "Đông"; if (deg > 112.5 && deg <= 157.5) return "Đông Nam";
+            if (deg > 157.5 && deg <= 202.5) return "Nam"; if (deg > 202.5 && deg <= 247.5) return "Tây Nam"; if (deg > 247.5 && deg <= 292.5) return "Tây"; if (deg > 292.5 && deg <= 337.5) return "Tây Bắc"; return "";
+        }
+
+        function switchWeatherView(type) {
+            $('.weather-tab-btn').removeClass('active');
+            const targetBtn = $('.weather-tab-btn').filter(function() { return $(this).attr('onclick').includes(`'${type}'`); }); targetBtn.addClass('active');
+            const listArea = document.getElementById('weather-list-area'); const chartArea = document.getElementById('weather-chart-area');
+            if (extState.currentWeatherChartInstance) { extState.currentWeatherChartInstance.destroy(); extState.currentWeatherChartInstance = null; }
+            if (type === 'list') { chartArea.style.display = 'none'; listArea.style.display = 'block'; return; }
+            listArea.style.display = 'none'; chartArea.style.display = 'block';
+            const ctx = document.getElementById('weatherCanvasNode').getContext('2d'); const dataPoints = extState.lastWeatherData.list.slice(0, 16);
+            const labels = dataPoints.map(item => { const d = new Date(item.dt * 1000); return d.getHours() + 'h ' + d.getDate() + '/' + (d.getMonth() + 1); });
+            if (type === 'rain') {
+                extState.currentWeatherChartInstance = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Xác suất mưa (%)', data: dataPoints.map(item => item.pop * 100), backgroundColor: 'rgba(0, 123, 255, 0.6)', borderColor: 'rgba(0, 123, 255, 1)', borderWidth: 1 }] }, options: { responsive: true, scales: { y: { min: 0, max: 100 } } } });
+            } else if (type === 'humidity') {
+                extState.currentWeatherChartInstance = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Độ ẩm không khí (%)', data: dataPoints.map(item => item.main.humidity), backgroundColor: 'rgba(40, 167, 69, 0.2)', borderColor: 'rgba(40, 167, 69, 1)', tension: 0.3, fill: true }] }, options: { responsive: true, scales: { y: { min: 0, max: 100 } } } });
+            } else if (type === 'pressure') {
+                extState.currentWeatherChartInstance = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Áp suất khí quyển (hPa)', data: dataPoints.map(item => item.main.pressure), borderColor: '#e65100', backgroundColor: 'transparent', tension: 0.1 }] }, options: { responsive: true } });
+            } else if (type === 'wind') {
+                const sectors = { "Bắc": 0, "Đông Bắc": 0, "Đông": 0, "Đông Nam": 0, "Nam": 0, "Tây Nam": 0, "Tây": 0, "Tây Bắc": 0 }; const counts = { "Bắc": 0, "Đông Bắc": 0, "Đông": 0, "Đông Nam": 0, "Nam": 0, "Tây Nam": 0, "Tây": 0, "Tây Bắc": 0 };
+                extState.lastWeatherData.list.forEach(item => { const dir = getWindDirectionText(item.wind.deg); if (sectors[dir] !== undefined) { sectors[dir] += item.wind.speed; counts[dir]++; } });
+                extState.currentWeatherChartInstance = new Chart(ctx, { type: 'polarArea', data: { labels: Object.keys(sectors), datasets: [{ label: 'Tốc độ gió trung bình (m/s)', data: Object.keys(sectors).map(k => counts[k] > 0 ? (sectors[k] / counts[k]) : 0), backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(75, 192, 192, 0.5)', 'rgba(255, 205, 86, 0.5)', 'rgba(201, 203, 207, 0.5)', 'rgba(54, 162, 235, 0.5)', 'rgba(153, 102, 255, 0.5)', 'rgba(230, 81, 0, 0.5)', 'rgba(0, 105, 217, 0.5)'] }] }, options: { responsive: true, plugins: { title: { display: true, text: 'Hoa Gió - Tốc độ theo hướng (m/s)' } } } });
+            }
+        }
+
+        function loadStreetViewPanorama(lat, lng) {
+            const svService = new google.maps.StreetViewService();
+            svService.getPanorama({ location: { lat: lat, lng: lng }, radius: 50 }, (data, status) => {
+                if (status === google.maps.StreetViewStatus.OK) {
+                    toggleStreetViewModal(true); if (!extState.panorama) { extState.panorama = new google.maps.StreetViewPanorama(document.getElementById('streetview-pano'), { signupControl: false, addressControl: true }); }
+                    extState.panorama.setPano(data.location.pano); extState.panorama.setPov({ heading: 270, pitch: 0 }); extState.panorama.setVisible(true);
+                } else { showToast("Không tìm thấy dữ liệu Street View đường phố trong bán kính này.", "error"); extState.streetViewActive = false; $('#custom-streetview-btn').removeClass('btn-active'); }
+            });
+        }
+
+        /* --- XỬ LÝ SỰ KIỆN CLICK BẢN ĐỒ VỚI KHẢ NĂNG CHỌN VỊ TRÍ DẪN ĐƯỜNG MỚI --- */
+        map.on('click', async (e) => {
+            L.DomEvent.stopPropagation(e); const latlng = e.latlng;
+            if (extState.isPickingStart) { 
+                extState.startCoord = latlng; 
+                document.getElementById('directions-start-input').value = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`; 
+                resetMapPickers(); 
+                toggleDirectionsModal(true); 
+                showToast("Đã ghi nhận ĐIỂM BẮT ĐẦU từ bản đồ", "success"); 
+                return; 
+            }
+            if (extState.isPickingEnd) { 
+                extState.endCoord = latlng; 
+                document.getElementById('directions-end-input').value = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`; 
+                resetMapPickers(); 
+                toggleDirectionsModal(true); 
+                showToast("Đã ghi nhận ĐIỂM ĐẾN từ bản đồ", "success"); 
+                return; 
+            }
+            if (drawMarkerHandler._enabled || drawLineHandler._enabled || drawPolyHandler._enabled) return;
+            if (extState.streetViewActive) { loadStreetViewPanorama(latlng.lat, latlng.lng); return; }
+
+            toggleLoading(true); const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latlng.lat},${latlng.lng}&key=${extState.googleApiKey}&language=vi`;
+            let locationName = `Vị trí đã chọn`;
+            try { 
+                const response = await fetch(url); 
+                const data = await response.json(); 
+                if (data.status === 'OK' && data.results.length > 0) locationName = data.results[0].formatted_address; 
+            } catch (error) { 
+                console.error(error); 
+            } finally { 
+                toggleLoading(false); 
+            }
+
+            if (extState.searchMarker) map.removeLayer(extState.searchMarker);
+            
+            const popupHtml = createLocationSharePopupHTML("📍 Vị trí chọn trên bản đồ", latlng.lat, latlng.lng, locationName, false);
+            extState.searchMarker = L.marker(latlng).addTo(map).bindPopup(popupHtml).openPopup();
+            getWeather(latlng.lat, latlng.lng, locationName);
+        });
+
+        $('#btn-pick-start').click(function(e) { L.DomEvent.stopPropagation(e); e.preventDefault(); extState.isPickingStart = true; extState.isPickingEnd = false; $(this).addClass('picking'); $('#btn-pick-end').removeClass('picking'); if (extState.searchMarker) { map.removeLayer(extState.searchMarker); extState.searchMarker = null; } toggleDirectionsModal(false); showToast("Vui lòng nhấp một điểm bất kỳ trên bản đồ làm ĐIỂM XUẤT PHÁT.", "info"); });
+        $('#btn-pick-end').click(function(e) { L.DomEvent.stopPropagation(e); e.preventDefault(); extState.isPickingEnd = true; extState.isPickingStart = false; $(this).addClass('picking'); $('#btn-pick-start').removeClass('picking'); if (extState.searchMarker) { map.removeLayer(extState.searchMarker); extState.searchMarker = null; } toggleDirectionsModal(false); showToast("Vui lòng nhấp một điểm bất kỳ trên bản đồ làm ĐIỂM ĐẾN.", "info"); });
+        function resetMapPickers() { extState.isPickingStart = false; extState.isPickingEnd = false; $('#btn-pick-start, #btn-pick-end').removeClass('picking'); }
+
+        $('#custom-streetview-btn').click(function(e) { e.preventDefault(); extState.streetViewActive = !extState.streetViewActive; $(this).toggleClass('btn-active', extState.streetViewActive); if (extState.streetViewActive) { showToast("Chế độ Street View đã bật. Hãy nhấp vào một vị trí bất kỳ trên đường phố.", "success"); } else { showToast("Đã tắt chế độ xem ảnh đường phố.", "info"); } });
+        $('#donate-btn').click(function(e) { e.preventDefault(); document.getElementById('donate-modal').classList.add('visible'); });
+        $('#search-input').on('input', function() { $('#main-search-clear').toggle($(this).val().length > 0); });
+        
+        $('#main-search-clear').click(function() { 
+            document.getElementById('search-input').value = ''; 
+            $(this).hide(); 
+            if (extState.searchMarker) { map.removeLayer(extState.searchMarker); extState.searchMarker = null; } 
+            hideWeatherInfoPanel(); 
+            showToast("Đã xóa dữ liệu tìm kiếm", "success"); 
+        });
+        
+        $('.inner-clear-btn').click(function() { const targetId = $(this).data('target'); document.getElementById(targetId).value = ''; if(targetId === 'directions-start-input') extState.startCoord = null; if(targetId === 'directions-end-input') extState.endCoord = null; });
+        $('#btn-clear-route-logic').click(function() { if (window.speechSynthesis) { window.speechSynthesis.cancel(); } $('#btn-voice-navigation').removeClass('speaking').text("🔊 Nghe Điều Hướng"); if (extState.routingControl) { map.removeControl(extState.routingControl); extState.routingControl = null; } document.getElementById('route-summary-modal').style.display = 'none'; extState.currentActiveRouteGeo = null; extState.currentActiveInstructions = null; showToast("Đã giải phóng tuyến lộ trình", "success"); });
+
+        $('#btn-save-route-kml').click(function(e) {
+            e.preventDefault(); if (!extState.currentActiveRouteGeo || extState.currentActiveRouteGeo.length === 0) { showToast("Không tìm thấy dữ liệu lộ trình hành trình để xuất file.", "error"); return; }
+            $('#save-modal-title').text("Lưu lộ trình (KML)"); $('#save-modal-desc-label').text("Mô tả tuyến đường:"); $('#kml-filename').val("");
+            $('#kml-description').val("");
+            $('#btn-confirm-save-drive').off('click').on('click', executeSaveRouteToDrive); $('#save-kml-modal').addClass('visible');
+        });
+
+        function executeSaveRouteToDrive() {
+            var fileName = $('#kml-filename').val().trim(); var description = $('#kml-description').val().trim() || "Không có mô tả.";
+            if (!fileName) { alert("Vui lòng đặt tên file!"); return; }
+            $('#save-kml-modal').removeClass('visible'); toggleLoading(true);
+            let kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>${fileName}</name>\n<description><![CDATA[${description}]]></description>\n`;
+            kml += `  <Placemark>\n    <name>Tuyen duong di ngan nhat</name>\n    <description><![CDATA[${description}]]></description>\n    <LineString>\n      <coordinates>\n`;
+            extState.currentActiveRouteGeo.forEach(pt => { kml += `        ${pt.lng},${pt.lat},0\n`; });
+            kml += `      </coordinates>\n    </LineString>\n  </Placemark>\n</Document>\n</kml>`; sendDataToAppsScript(fileName, kml);
+        }
+
+        $('#btn-voice-navigation').click(function(e) {
+            e.preventDefault(); if (!window.speechSynthesis) { showToast("Trình duyệt không hỗ trợ tính năng chuyển văn bản thành giọng nói.", "error"); return; }
+            if (window.speechSynthesis.speaking) { window.speechSynthesis.cancel(); $(this).removeClass('speaking').text("🔊 Nghe Điều Hướng"); showToast("Đã dừng đọc điều hướng", "info"); return; }
+            if (!extState.currentActiveInstructions || extState.currentActiveInstructions.length === 0) { showToast("Không có thông tin văn bản hướng dẫn di chuyển.", "error"); return; }
+            $(this).addClass('speaking').text("🛑 Dừng Đọc Lộ Trình"); showToast("Bắt đầu đọc chỉ dẫn hành trình...", "success");
+            let textToSpeak = `Thông tin lộ trình hành trình. Tổng khoảng cách khoảng ${$('#summary-distance').text().replace('.', ' phẩy')}. Thời gian di chuyển dự kiến là ${$('#summary-time').text()}. Sau đây là chỉ dẫn chi tiết từng bước. `;
+            extState.currentActiveInstructions.forEach((step, index) => {
+                let cleanText = step.text.replace(/<\/?[^>]+(>|$)/g, ""); let dist = Math.round(step.distance);
+                let distStr = (step.distance >= 1000) ? ((step.distance / 1000).toFixed(1) + " ki lô mét").replace('.', ' phẩy') : (dist + " mét");
+                textToSpeak += `Bước ${index + 1}: ${cleanText}, đi tiếp khoảng ${distStr}. `;
+            });
+            textToSpeak += "Đã kết thúc lộ trình hướng dẫn hành trình.";
+            const utterance = new SpeechSynthesisUtterance(textToSpeak); utterance.lang = 'vi-VN'; utterance.rate = 1.0; utterance.pitch = 1.0;
+            const voices = window.speechSynthesis.getVoices(); const viVoice = voices.find(voice => voice.lang.includes('vi') || voice.lang.includes('VI')); if (viVoice) utterance.voice = viVoice;
+            utterance.onend = function() { $('#btn-voice-navigation').removeClass('speaking').text("🔊 Nghe Điều Hướng"); };
+            utterance.onerror = function() { $('#btn-voice-navigation').removeClass('speaking').text("🔊 Nghe Điều Hướng"); };
+            window.speechSynthesis.speak(utterance);
+        });
+
+        if (window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefined) { window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices(); }
+
+        function parseDMSToDD(dmsStr) {
+            const dmsRegex = /(\d{1,3})\s*[°ºo0\*]?\s*(\d{1,2})\s*['’`]?\s*(\d{1,2}(?:\.\d+)?)\s*["”]?\s*([NSEW])/gi; let matches = []; let match;
+            while ((match = dmsRegex.exec(dmsStr)) !== null) {
+                const d = parseFloat(match[1]); const m = parseFloat(match[2]); const s = parseFloat(match[3]); const direction = match[4].toUpperCase();
+                let dd = d + (m / 60) + (s / 3600); if (direction === 'S' || direction === 'W') dd = -dd; matches.push(dd);
+            }
+            if (matches.length >= 2) return { lat: matches[0], lng: matches[1] }; return null;
+        }
+
+        function parseCoordsFromUrl(urlStr) { const urlRegex = /([+-]?\d{1,2}\.\d+)\s*,\s*([+-]?\d{1,3}\.\d+)/; const match = urlStr.match(urlRegex); if (match) return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) }; return null; }
+
+        async function execAddressSearch() {
+            const query = document.getElementById('search-input').value.trim(); if (!query) return; toggleLoading(true); let targetLatLng = null; let displayName = query;
+            if (query.toLowerCase().includes('http') || query.toLowerCase().includes('maps')) { const coords = parseCoordsFromUrl(query); if (coords) { targetLatLng = L.latLng(coords.lat, coords.lng); displayName = `Tọa độ từ URL: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`; } }
+            else { const coords = parseDMSToDD(query); if (coords) { targetLatLng = L.latLng(coords.lat, coords.lng); displayName = `Tọa độ DMS: ${coords.lat.toFixed(4)}°N, ${coords.lng.toFixed(4)}°E`; } }
+            if (targetLatLng) { 
+                map.setView(targetLatLng, 15); 
+                if (extState.searchMarker) map.removeLayer(extState.searchMarker); 
+                const popupHtml = createLocationSharePopupHTML("📍 Kết quả tìm kiếm", targetLatLng.lat, targetLatLng.lng, displayName, false);
+                extState.searchMarker = L.marker(targetLatLng).addTo(map).bindPopup(popupHtml).openPopup(); 
+                toggleLoading(false); 
+                showToast("Đã định vị theo tọa độ thành công", "success"); 
+                getWeather(targetLatLng.lat, targetLatLng.lng, displayName); 
+            }
+            else {
+                try {
+                    const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${extState.googleApiKey}&language=vi`); const data = await response.json();
+                    if (data.status === 'OK' && data.results.length > 0) { 
+                        const loc = data.results[0].geometry.location; 
+                        const addr = data.results[0].formatted_address; 
+                        const latlng = L.latLng(loc.lat, loc.lng); 
+                        map.setView(latlng, 14); 
+                        if (extState.searchMarker) map.removeLayer(extState.searchMarker); 
+                        const popupHtml = createLocationSharePopupHTML("📍 Kết quả tìm kiếm", loc.lat, loc.lng, addr, false);
+                        extState.searchMarker = L.marker(latlng).addTo(map).bindPopup(popupHtml).openPopup(); 
+                        getWeather(loc.lat, loc.lng, addr); 
+                    }
+                    else { showToast('Không tìm thấy địa điểm', 'error'); }
+                } catch (e) { showToast('Lỗi kết nối tìm kiếm', 'error'); } finally { toggleLoading(false); }
+            }
+        }
+        $('#search-button').click(debounce(execAddressSearch, 300)); $('#search-input').keypress((e) => { if (e.key === 'Enter') debounce(execAddressSearch, 300)(); });
+
+        $('#custom-locate-btn').click(function(e) {
+            e.preventDefault(); if (!navigator.geolocation) { showToast("Trình duyệt không hỗ trợ định vị.", "error"); return; } toggleLoading(true);
+            navigator.geolocation.getCurrentPosition(
+                (position) => { 
+                    const lat = position.coords.latitude; 
+                    const lng = position.coords.longitude; 
+                    const latlng = L.latLng(lat, lng); 
+                    
+                    extState.userGPSPosition = { lat, lng }; 
+                    map.flyTo(latlng, 15, { animate: true, duration: 1.5 }); 
+                    if (extState.searchMarker) map.removeLayer(extState.searchMarker); 
+                    
+                    const popupHtml = createLocationSharePopupHTML("📍 Vị trí hiện tại của bạn", lat, lng, "", true);
+
+                    extState.searchMarker = L.marker(latlng).addTo(map).bindPopup(popupHtml).openPopup(); 
+                    toggleLoading(false); 
+                    showToast("Đã định vị thành công vị trí hiện tại!", "success"); 
+                    getWeather(lat, lng, "Vị trí hiện tại"); 
+                },
+                () => { toggleLoading(false); showToast("Không nhận được tín hiệu định vị GPS.", "error"); }, { enableHighAccuracy: true, timeout: 8000 }
+            );
+        });
+
+        $('#custom-directions-btn').click(function(e) { e.preventDefault(); if (extState.userGPSPosition && !document.getElementById('directions-start-input').value.trim()) { document.getElementById('directions-start-input').value = 'Vị trí của tôi'; } toggleDirectionsModal(true); });
+
+        /* --- CẢI TIẾN TÍNH NĂNG TÌM LỘ TRÌNH DẪN ĐƯỜNG HOÀN CHỈNH --- */
+        $('#get-directions-btn').click(async function() {
+            if (extState.routingControl) { map.removeControl(extState.routingControl); extState.routingControl = null; }
+            document.getElementById('route-summary-modal').style.display = 'none'; extState.currentActiveRouteGeo = null; extState.currentActiveInstructions = null;
+            const startVal = document.getElementById('directions-start-input').value.trim(); 
+            const endVal = document.getElementById('directions-end-input').value.trim(); 
+            
+            if (!startVal || !endVal) { showToast("Vui lòng nhập đủ Điểm bắt đầu và Điểm đến.", "error"); return; } 
+            toggleLoading(true);
+            
+            const parseCoordStr = (str) => { 
+                const parts = str.split(','); 
+                if (parts.length === 2) { 
+                    const lat = parseFloat(parts[0]); 
+                    const lng = parseFloat(parts[1]); 
+                    if (!isNaN(lat) && !isNaN(lng)) return L.latLng(lat, lng); 
+                } 
+                return null; 
+            };
+            
+            const geocodeTarget = async (query, fallbackCoord) => {
+                if (query.toLowerCase() === 'vị trí của tôi') { 
+                    if (extState.userGPSPosition) {
+                        return L.latLng(extState.userGPSPosition.lat, extState.userGPSPosition.lng); 
+                    } else {
+                        // Tự động gọi GPS lấy vị trí tức thời nếu người dùng chưa định vị trước đó
+                        return new Promise((resolve, reject) => {
+                            if (!navigator.geolocation) { reject(new Error("Thiết bị không hỗ trợ GPS")); return; }
+                            navigator.geolocation.getCurrentPosition(
+                                (pos) => {
+                                    extState.userGPSPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                                    resolve(L.latLng(pos.coords.latitude, pos.coords.longitude));
+                                },
+                                (err) => reject(new Error("Không thể lấy vị trí hiện tại của thiết bị.")),
+                                { enableHighAccuracy: true, timeout: 8000 }
+                            );
+                        });
+                    }
+                }
+                const inlineLatLng = parseCoordStr(query); 
+                if (inlineLatLng) return inlineLatLng; 
+                if (fallbackCoord) return fallbackCoord;
+                
+                const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${extState.googleApiKey}&language=vi`; 
+                const resp = await fetch(url); 
+                const data = await resp.json(); 
+                if (data.status !== 'OK') throw new Error('Lỗi Geocoding địa điểm: ' + query); 
+                return L.latLng(data.results[0].geometry.location.lat, data.results[0].geometry.location.lng);
+            };
+
+            try {
+                const startLatLng = await geocodeTarget(startVal, extState.startCoord); 
+                const endLatLng = await geocodeTarget(endVal, extState.endCoord);
+                const pad = getAdaptiveBoundsPadding();
+                
+                extState.routingControl = L.Routing.control({ 
+                    waypoints: [startLatLng, endLatLng], 
+                    router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }), 
+                    show: false, addWaypoints: false, fitSelectedRoutes: false,
+                    lineOptions: { styles: [{ color: '#28a745', opacity: 0.8, weight: 6 }] } 
+                }).addTo(map);
+                
+                extState.routingControl.on('routesfound', function(e) {
+                    const route = e.routes[0]; 
+                    const summary = route.summary; 
+                    extState.currentActiveRouteGeo = route.coordinates; 
+                    extState.currentActiveInstructions = route.instructions;
+                    document.getElementById('summary-distance').textContent = (summary.totalDistance / 1000).toFixed(2) + ' km'; 
+                    document.getElementById('summary-time').textContent = Math.round(summary.totalTime / 60) + ' phút'; 
+                    document.getElementById('route-summary-modal').style.display = 'block'; 
+                    toggleLoading(false); 
+                    toggleDirectionsModal(false);
+                    const routeBounds = L.latLngBounds(route.coordinates); 
+                    map.fitBounds(routeBounds, { paddingTopLeft: pad.paddingTopLeft, paddingBottomRight: pad.paddingBottomRight, animate: true });
+                });
+                
+                extState.routingControl.on('routingerror', function() { 
+                    showToast("Không tìm thấy đường đi giữa 2 địa điểm này.", "error"); 
+                    toggleLoading(false); 
+                });
+            } catch(err) { 
+                showToast(err.message || "Lỗi phân tích địa điểm dẫn đường.", "error"); 
+                toggleLoading(false); 
+            }
+        });
+
+        $('#custom-image-ocr-btn').click((e) => { e.preventDefault(); toggleOcrModal(true); });
+        const dropzone = document.getElementById('dropzone'); const fileInput = document.getElementById('fileInput');
+        dropzone.onclick = () => fileInput.click();
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+        dropzone.addEventListener('drop', (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); if (e.dataTransfer.files[0]) handleOcrImageFile(e.dataTransfer.files[0]); });
+        fileInput.onchange = (e) => { if (e.target.files[0]) handleOcrImageFile(e.target.files[0]); };
+
+        function handleOcrImageFile(file) { 
+            if (!file.type.startsWith('image/')) return; 
+            document.getElementById('ocrResultSection').style.display = 'none'; 
+            toggleLoading(true); 
+            extState.currentOcrData.imgName = file.name.split('.')[0]; 
+            const reader = new FileReader(); 
+            reader.onload = (e) => {
+                extState.currentOcrData.base64 = e.target.result;
+                processOcrEngine(e.target.result);
+            }; 
+            reader.readAsDataURL(file); 
+        }
+
+        async function processOcrEngine(imageSrc) {
+            const img = new Image();
+            img.onload = async function() {
+                const canvas = document.getElementById('helperCanvas'); const ctx = canvas.getContext('2d'); canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img, 0, 0);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height); const data = imageData.data;
+                for (let i = 0; i < data.length; i += 4) { let avg = (data[i] + data[i+1] + data[i+2]) / 3; let v = (avg > 180) ? 255 : 0; data[i] = data[i+1] = data[i+2] = v; } ctx.putImageData(imageData, 0, 0);
+                try { const worker = await Tesseract.createWorker(['vie', 'eng']); const { data: { text } } = await worker.recognize(canvas.toDataURL()); parseAndDisplayOcr(text); await worker.terminate(); } catch (err) { showToast("Lỗi phân tích ảnh.", "error"); } finally { toggleLoading(false); }
+            }; img.src = imageSrc;
+        }
+
+        function parseAndDisplayOcr(rawText) {
+            const cleanText = rawText.replace(/,/g, '.'); 
+            const latMatch = cleanText.match(/(\d{1,2}\.\d{4,10})\s?[°o0\*]?\s?N/i); 
+            const lngMatch = cleanText.match(/(\d{2,3}\.\d{4,10})\s?[°o0\*]?\s?E/i);
+            
+            if (latMatch && lngMatch) {
+                const lat = parseFloat(latMatch[1]); 
+                const lng = parseFloat(lngMatch[1]); 
+                const coordsStr = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                
+                extState.currentOcrData.lat = lat;
+                extState.currentOcrData.lng = lng;
+                
+                const timeMatch = rawText.match(/\b\d{1,2}:\d{2}\b/); 
+                const timeVal = timeMatch ? timeMatch[0] : "Không xác định";
+                extState.currentOcrData.time = timeVal;
+                
+                const dateMatch = rawText.match(/\b\d{2}\/\d{2}\/\d{4}\b/) || rawText.match(/\b\d{4}-\d{2}-\d{2}\b/);
+                const dateVal = dateMatch ? dateMatch[0] : new Date().toLocaleDateString('vi-VN');
+                extState.currentOcrData.date = dateVal;
+
+                let addressVal = "Đang trích xuất...";
+                document.getElementById('attr-imgname').innerText = extState.currentOcrData.imgName;
+                document.getElementById('displayCoords').innerText = coordsStr; 
+                document.getElementById('mapsLink').href = `http://maps.google.com/?q=${lat},${lng}`; 
+                document.getElementById('attr-gps').innerText = `${lat.toFixed(6)}°N, ${lng.toFixed(6)}°E`;
+                document.getElementById('attr-time').innerText = timeVal;
+                document.getElementById('attr-date').innerText = dateVal;
+                document.getElementById('ocrResultSection').style.display = 'block';
+
+                fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${extState.googleApiKey}&language=vi`)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'OK' && res.results.length > 0) {
+                        addressVal = res.results[0].formatted_address;
+                    } else {
+                        addressVal = `Khu vực tọa độ (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                    }
+                    extState.currentOcrData.address = addressVal;
+                    document.getElementById('attr-address').innerText = addressVal;
+                    updateOcrMarkerPopup();
+                })
+                .catch(() => {
+                    addressVal = "Không thể kết nối lấy địa chỉ.";
+                    extState.currentOcrData.address = addressVal;
+                    document.getElementById('attr-address').innerText = addressVal;
+                    updateOcrMarkerPopup();
+                });
+
+                if (extState.ocrMarker) map.removeLayer(extState.ocrMarker);
+                const orangeIcon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+                
+                extState.ocrMarker = L.marker([lat, lng], { icon: orangeIcon }).addTo(map);
+                updateOcrMarkerPopup();
+                
+                map.flyTo([lat, lng], 15);
+                setTimeout(() => { toggleOcrModal(false); }, 1200); 
+                showToast("Đã định vị thành công mốc ảnh hiện trường!", "success"); 
+                getWeather(lat, lng, `Mốc hiện trường (${lat.toFixed(4)}, ${lng.toFixed(4)})`);
+            } else { 
+                alert("Không tìm thấy chuỗi tọa độ hợp lệ có cấu trúc dữ liệu N/E trên ảnh."); 
+            }
+        }
+
+        function updateOcrMarkerPopup() {
+            if (!extState.ocrMarker) return;
+            const data = extState.currentOcrData;
+            const popupHtml = `
+                <div style="font-size:13px; color:#333; min-width:180px;">
+                    <b style="color:#e65100;">📍 Mốc ảnh Timemark</b><br>
+                    <b>Tên ảnh:</b> ${data.imgName}<br>
+                    <b>Vị trí:</b> ${data.address}<br>
+                    <b>Thời gian:</b> ${data.time} | ${data.date}<br>
+                    <b>Tọa độ:</b> ${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}<br>
+                    <div class="popup-img-container" onclick="openLargeImageModal('${data.imgName}', '${data.base64}')">
+                        <img src="${data.base64}" alt="Thumbnail">
+                        <br><span class="popup-btn-large">🔍 Xem hình lớn</span>
+                    </div>
+                    <div class="share-btn-group">
+                        <button class="btn-share-action btn-share-copy" onclick="copyLocationLink(${data.lat}, ${data.lng})">📋 Link</button>
+                        <button class="btn-share-action btn-share-gmaps" onclick="shareToGoogleMaps(${data.lat}, ${data.lng})">📍 Maps</button>
+                        <button class="btn-share-action btn-share-route" onclick="navigateToCoords(${data.lat}, ${data.lng}, false)">🚗 Dẫn đường</button>
+                    </div>
+                </div>
+            `;
+            extState.ocrMarker.bindPopup(popupHtml).openPopup();
+        }
+
+        function openLargeImageModal(title, base64) {
+            document.getElementById('large-image-title').innerText = (title || "Ảnh hiện trường") + " - Cận cảnh không gian lớn";
+            document.getElementById('large-image-display').src = base64 || extState.currentOcrData.base64;
+            document.getElementById('view-large-image-modal').classList.add('visible');
+        }
+
+        async function buildKmzBlob() {
+            const data = extState.currentOcrData;
+            if(!data.lat || !data.lng) {
+                showToast("Không tìm thấy dữ liệu ảnh để khởi tạo cấu trúc bản đồ KMZ.", "error");
+                return null;
+            }
+            
+            const zip = new JSZip();
+            const fileNameImg = "photo_timemark.png";
+            const base64Content = data.base64.split(',')[1];
+            zip.file(`images/${fileNameImg}`, base64Content, {base64: true});
+
+            let descHtml = `<div style="font-family:Arial,sans-serif;padding:5px;max-width:300px;"><h3 style="color:#e65100;margin:0 0 8px 0;">Mốc Hiện Trường Timemark</h3><p><b>Vị trí:</b> ${data.address}</p><p><b>Thời gian chụp:</b> ${data.time} - ${data.date}</p><p><b>Tọa độ GPS:</b> ${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}</p><div style="margin-top:10px;text-align:center;"><img src="images/${fileNameImg}" style="width:100%;max-width:260px;border-radius:4px;border:1px solid #ccc Papayawhip;"/></div></div>`;
+
+            const kmlContent = `<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${data.imgName}</name><description>Tệp xuất dữ liệu từ Công cụ Quản lý Timemark</description><Placemark><name>${data.imgName}</name><description><![CDATA[${descHtml}]]></description><Point><coordinates>${data.lng},${data.lat},0</coordinates></Point></Placemark></Document></kml>`;
+
+            zip.file("doc.kml", kmlContent);
+            const kmzBlob = await zip.generateAsync({type: "blob"});
+            return kmzBlob;
+        }
+
+        $('#saveOcrKmzDriveBtn').click(async function() {
+            const data = extState.currentOcrData;
+            const kmzBlob = await buildKmzBlob();
+            if(!kmzBlob) return;
+
+            toggleLoading(true);
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64Kmz = reader.result.split(',')[1];
+                const fullTitle = `${data.imgName}_Tại_${data.lat.toFixed(4)}_${data.lng.toFixed(4)}.kmz`;
+
+                fetch(APPS_SCRIPT_URL, {
+                    method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        action: "saveFile", fileName: fullTitle, kmlContent: base64Kmz, mimeType: "application/vnd.google-earth.kmz" 
+                    })
+                })
+                .then(() => { 
+                    toggleLoading(false); 
+                    showToast("Đã lưu tệp KMZ hiện trường vào kho Google Drive mặc định!", "success"); 
+                })
+                .catch(err => { 
+                    console.error(err); 
+                    toggleLoading(false); 
+                    showToast("Gặp sự cố kết nối đồng bộ kho lưu trữ mặc định.", "error"); 
+                });
+            };
+            reader.readAsDataURL(kmzBlob);
+        });
+
+        $('#downloadOcrKmzLocalBtn').click(async function() {
+            const data = extState.currentOcrData;
+            const kmzBlob = await buildKmzBlob();
+            if(!kmzBlob) return;
+
+            const fullTitle = `${data.imgName}_Tại_${data.lat.toFixed(4)}_${data.lng.toFixed(4)}.kmz`;
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(kmzBlob);
+            link.download = fullTitle;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Đã tải tệp KMZ xuống thiết bị thành công!", "success");
+        });
+
+        $('#copyCoordsBtn').click(function() { navigator.clipboard.writeText(document.getElementById('displayCoords').innerText).then(() => { $(this).text("Đã lưu!").addClass('copied'); setTimeout(() => { $(this).text("Sao chép chuỗi").removeClass('copied'); }, 2000); }); });
+
+        function getCustomIcon(iconFileName) {
+            const iconMap = { 'KhuDuLich': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', 'HoDamAo': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-cyan.png', 'Thac': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', 'HangDong': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-darkblue.png', 'BaiBien': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-cyan.png', 'Dao': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', 'KhuBTTN': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', 'Resort': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', 'Hotel': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png', 'SanBay': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-darkred.png', 'default': 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-black.png' };
+            const iconKey = Object.keys(iconMap).find(key => iconFileName.startsWith(key)); return L.icon({ iconUrl: iconKey ? iconMap[iconKey] : iconMap['default'], iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+        }
+
+        $('#custom-upload-kmz-btn').click((e) => { e.preventDefault(); $('#custom-kmz-upload-input').click(); });
+        $('#custom-kmz-upload-input').change(handleExternalLayersUpload);
+
+        async function handleExternalLayersUpload(event) {
+            const files = event.target.files; if (!files.length) return; toggleLoading(true);
+            extState.kmzIndividualLayers.forEach(l => map.removeLayer(l.layer)); extState.kmzIndividualLayers = [];
+            const promises = Array.from(files).map(file => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        try {
+                            let dom; let kmzFiles = {};
+                            if (file.name.toLowerCase().endsWith('.kmz')) {
+                                const zip = await JSZip.loadAsync(e.target.result); const kmlFile = Object.keys(zip.files).find(n => n.toLowerCase().endsWith('.kml'));
+                                if (!kmlFile) throw new Error(`Không thấy KML trong file ${file.name}`);
+                                dom = (new DOMParser()).parseFromString(await zip.file(kmlFile).async('string'), 'text/xml');
+                                zip.forEach((relativePath, zipEntry) => { if (!zipEntry.dir && relativePath !== kmlFile) kmzFiles[relativePath] = zipEntry.async('base64'); });
+                                for (const key in kmzFiles) kmzFiles[key] = await kmzFiles[key];
+                            } else { dom = (new DOMParser()).parseFromString(e.target.result, 'text/xml'); }
+                            resolve({ name: file.name, dom: dom, files: kmzFiles });
+                        } catch(err) { reject(err); }
+                    };
+                    if (file.name.toLowerCase().endsWith('.kmz')) reader.readAsArrayBuffer(file); else reader.readAsText(file);
+                });
+            });
+            Promise.all(promises).then(results => { processMultipleParsedResults(results); }).catch((err) => { console.error(err); showToast("Lỗi kết cấu cấu trúc tệp dữ liệu.", "error"); toggleLoading(false); });
+        }
+
+        function processMultipleParsedResults(results) {
+            const combinedBounds = L.latLngBounds();
+            externalLayersNode.children = [];
+
+            results.forEach(res => {
+                processAndAppendParsedLayer(res.dom, res.name, res.files || {}, combinedBounds, false);
+            });
+            
+            if (combinedBounds.isValid()) {
+                const pad = getAdaptiveBoundsPadding();
+                map.fitBounds(combinedBounds, { paddingTopLeft: pad.paddingTopLeft, paddingBottomRight: pad.paddingBottomRight, animate: true, duration: 1.2 });
+            }
+            refreshLayerTreeControl();
+            toggleLoading(false);
+            showToast("Đã nạp thành công các lớp dữ liệu mới vào hệ thống!", "success");
+        }
+
+        function processAndAppendParsedLayer(dom, layerName, kmzFiles = {}, globalBounds = null, singleMode = true) {
+            const groundOverlays = dom.getElementsByTagName('GroundOverlay'); 
+            const hasGroundOverlays = groundOverlays.length > 0;
+            
+            let layerGroup = hasGroundOverlays ? L.layerGroup() : L.markerClusterGroup({ disableClusteringAtZoom: 16 });
+
+            for (let i = 0; i < groundOverlays.length; i++) {
+                const overlay = groundOverlays[i];
+                const hrefElement = overlay.getElementsByTagName('href')[0] || overlay.getElementsByTagName('Icon')[0]?.getElementsByTagName('href')[0];
+                const href = hrefElement ? hrefElement.textContent.trim() : null;
+                const latLonBox = overlay.getElementsByTagName('LatLonBox')[0];
+
+                if (href && latLonBox) {
+                    const parseCoord = (tagName) => {
+                        const val = latLonBox.getElementsByTagName(tagName)[0]?.textContent;
+                        return val ? parseFloat(val.trim()) : NaN;
+                    };
+
+                    const south = parseCoord('south');
+                    const north = parseCoord('north');
+                    const east = parseCoord('east');
+                    const west = parseCoord('west');
+
+                    if (!isNaN(south) && !isNaN(north) && !isNaN(east) && !isNaN(west)) {
+                        const bounds = [[south, west], [north, east]];
+                        if (globalBounds) globalBounds.extend(bounds);
+
+                        let cleanHref = href.replace(/^(\.\.\/|\.\/)/, '');
+                        let imageUrl = href;
+
+                        if (kmzFiles[cleanHref]) {
+                            let ext = cleanHref.split('.').pop().toLowerCase();
+                            if (ext === 'jpg') ext = 'jpeg';
+                            imageUrl = `data:image/${ext};base64,${kmzFiles[cleanHref]}`;
+                        } else {
+                            let baseName = cleanHref.split('/').pop();
+                            let foundKey = Object.keys(kmzFiles).find(k => k.endsWith(baseName) || baseName.endsWith(k));
+                            if (foundKey) {
+                                let ext = foundKey.split('.').pop().toLowerCase();
+                                if (ext === 'jpg') ext = 'jpeg';
+                                imageUrl = `data:image/${ext};base64,${kmzFiles[foundKey]}`;
+                            }
+                        }
+
+                        const imgOverlay = L.imageOverlay(imageUrl, bounds, { opacity: 1.0 });
+                        imgOverlay.addTo(layerGroup);
+                    }
+                }
+            }
+
+            const iconStyles = {}; const styleMaps = {}; const styles = dom.getElementsByTagName('Style');
+            for (const style of styles) {
+                const styleId = style.getAttribute('id'); const iconHrefElement = style.getElementsByTagName('IconStyle')[0]?.getElementsByTagName('Icon')[0]?.getElementsByTagName('href')[0];
+                if (styleId && iconHrefElement) {
+                    let iconHref = iconHrefElement.textContent.trim(); let cleanHref = iconHref.replace(/^(\.\.\/|\.\/)/, ''); let finalIconUrl = "";
+                    if (kmzFiles[cleanHref]) { 
+                        let ext = cleanHref.split('.').pop().toLowerCase(); 
+                        if(ext === 'jpg') ext = 'jpeg';
+                        finalIconUrl = `data:image/${ext};base64,${kmzFiles[cleanHref]}`; 
+                    } 
+                    else {
+                        let baseName = cleanHref.split('/').pop(); let foundKey = Object.keys(kmzFiles).find(k => k.endsWith(baseName) || baseName.endsWith(k));
+                        if (foundKey) { 
+                            let ext = foundKey.split('.').pop().toLowerCase(); 
+                            if(ext === 'jpg') ext = 'jpeg';
+                            finalIconUrl = `data:image/${ext};base64,${kmzFiles[foundKey]}`; 
+                        } 
+                        else if (iconHref.startsWith('http')) { finalIconUrl = iconHref; } 
+                        else { finalIconUrl = getCustomIcon(baseName.split('.')[0]).options.iconUrl; }
+                    }
+                    iconStyles[`#${styleId}`] = L.icon({ iconUrl: finalIconUrl, iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+                }
+            }
+
+            const kmlStyleMaps = dom.getElementsByTagName('StyleMap');
+            for (const styleMap of kmlStyleMaps) { 
+                const styleMapId = styleMap.getAttribute('id'); const pairs = styleMap.getElementsByTagName('Pair');
+                for (let j = 0; j < pairs.length; j++) {
+                    let key = pairs[j].getElementsByTagName('key')[0]?.textContent;
+                    if (key === 'normal') { let normalStyleUrl = pairs[j].getElementsByTagName('styleUrl')[0]?.textContent; if (styleMapId && normalStyleUrl) styleMaps[`#${styleMapId}`] = normalStyleUrl; break; }
+                }
+            }
+
+            var geoJsonData = toGeoJSON.kml(dom);
+
+            L.geoJSON(geoJsonData, {
+                style: (f) => f.properties.styleUrl && f.properties.styleUrl.includes('LineString') ? { color: '#007BFF', weight: 4 } : {},
+                pointToLayer: function (f, latlng) {
+                    let o = { pane: 'popupPane' };
+                    let sUrl = f.properties.styleUrl; 
+                    if (sUrl) { 
+                        if (styleMaps[sUrl]) sUrl = styleMaps[sUrl]; 
+                        if (iconStyles[sUrl]) o.icon = iconStyles[sUrl]; 
+                    }
+                    if (!o.icon) {
+                        o.icon = L.icon({ 
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png', 
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png', 
+                            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] 
+                        });
+                    }
+                    return L.marker(latlng, o);
+                },
+                onEachFeature: function(f, layer) {
+                    let c = ""; 
+                    if (f.properties.name) c += `<b>${f.properties.name}</b>`; 
+                    if (f.properties.description) {
+                        let desc = f.properties.description;
+                        for (const relativePath in kmzFiles) {
+                            if (desc.includes(relativePath)) {
+                                let ext = relativePath.split('.').pop().toLowerCase();
+                                if(ext === 'jpg') ext = 'jpeg';
+                                desc = desc.replace(new RegExp(relativePath, 'g'), `data:image/${ext};base64,${kmzFiles[relativePath]}`);
+                            }
+                        }
+                        c += `<br>${desc}`;
+                    }
+                    
+                    if (c) {
+                        layer.bindPopup(c, { maxWidth: 320 });
+                        layer.on('popupopen', function(e) {
+                            $(e.popup._contentNode).find('img').css({'cursor': 'pointer', 'width': '100%', 'max-width': '260px'}).attr('title', 'Nhấn để phóng to ảnh').off('click').on('click', function() {
+                                openLargeImageModal(f.properties.name, $(this).attr('src'));
+                            });
+                        });
+                    }
+                    if (layer instanceof L.Marker && !hasGroundOverlays) layerGroup.addLayer(layer); else layer.addTo(layerGroup);
+                }
+            });
+
+            layerGroup.addTo(map);
+
+            const sliderId = 'opacity-slider-' + Date.now() + Math.floor(Math.random() * 1000);
+            const layerLabelWithControl = `
+                <span class="layer-name-text">${layerName}</span>
+                <div class="layer-opacity-container" onclick="L.DomEvent.stopPropagation(event);">
+                    <span>Độ mờ:</span>
+                    <input type="range" class="layer-opacity-slider" id="${sliderId}" min="0" max="100" value="100">
+                    <span id="val-${sliderId}">100%</span>
+                </div>`;
+
+            extState.kmzIndividualLayers.push({ name: layerName, layer: layerGroup });
+            externalLayersNode.children.push({ label: layerLabelWithControl, layer: layerGroup });
+
+            if (globalBounds && layerGroup.getBounds && typeof layerGroup.getBounds === 'function' && layerGroup.getBounds().isValid()) {
+                globalBounds.extend(layerGroup.getBounds());
+            }
+
+            setTimeout(() => {
+                const sliderInput = document.getElementById(sliderId);
+                if (sliderInput) {
+                    sliderInput.addEventListener('input', function(e) {
+                        const opacityValue = parseFloat(e.target.value) / 100;
+                        document.getElementById(`val-${sliderId}`).innerText = e.target.value + '%';
+                        layerGroup.eachLayer(function(innerLayer) {
+                            if (typeof innerLayer.setOpacity === 'function') { innerLayer.setOpacity(opacityValue); } 
+                            else if (typeof innerLayer.setStyle === 'function') { innerLayer.setStyle({ opacity: opacityValue, fillOpacity: opacityValue * 0.2 }); }
+                            else if (innerLayer instanceof L.Marker && innerLayer.getElement()) { innerLayer.setOpacity(opacityValue); }
+                        });
+                    });
+                }
+            }, 300);
+
+            if(singleMode) {
+                if (layerGroup.getBounds && typeof layerGroup.getBounds === 'function' && layerGroup.getBounds().isValid() && map) { 
+                    const pad = getAdaptiveBoundsPadding(); 
+                    map.fitBounds(layerGroup.getBounds(), { paddingTopLeft: pad.paddingTopLeft, paddingBottomRight: pad.paddingBottomRight, animate: true, duration: 1.2 }); 
+                }
+                refreshLayerTreeControl();
+                toggleLoading(false);
+                showToast(`Đã nạp thành công: ${layerName}`, "success");
+            }
+        }
+
+        function refreshLayerTreeControl() {
+            map.removeControl(lay);
+            lay = L.control.layers.tree(null, overlaysTree, { collapsed: true });
+            lay.addTo(map);
+        }
+
+        loadCloudTrees();
+        autoLoadVN2026LayerFromDrive();
+        </script>
+    </body>
+</html>
