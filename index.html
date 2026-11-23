@@ -5706,6 +5706,160 @@
             color: #1d5fa7 !important;
         }
 
+
+        /* =========================================================================
+           BỔ SUNG V39: ẨN NÚT CHỈNH SỬA CHÚ GIẢI TRÊN GIAO DIỆN CHÍNH &
+           CANH CHỈNH HÀI HÒA KHOẢNG CÁCH CỤM NÚT PHẢI VỚI NÚT LAYER CONTROL (DI ĐỘNG)
+           ========================================================================= */
+        /* 1. Ẩn hoàn toàn nút Chỉnh sửa nội dung chú giải trên giao diện bản đồ chính
+              (Người dùng vẫn mở được từ QGIS Studio, Style Studio, Print Composer & Bảng chú giải nổi) */
+        #custom-legend-editor-btn,
+        body[data-role="gis"] #custom-legend-editor-btn,
+        body[data-role="survey"] #custom-legend-editor-btn,
+        body[data-role="worker"] #custom-legend-editor-btn,
+        body[data-role="fitness"] #custom-legend-editor-btn {
+            display: none !important;
+        }
+
+        /* 2. Đồng bộ trục lề phải và khoảng cách đệm an toàn giữa nút Layer Control (.leaflet-top.leaflet-right)
+              và cột nút chức năng phía phải (#right-controls-container) */
+        :root {
+            --right-layer-ctrl-clearance: 68px;
+        }
+
+        .leaflet-top.leaflet-right {
+            right: 12px !important;
+            top: var(--dynamic-top-offset, 138px) !important;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .leaflet-top.leaflet-right .leaflet-control-layers {
+            margin-top: 2px !important;
+            margin-right: 0 !important;
+            border-radius: 12px !important;
+            transition: box-shadow 0.2s ease, transform 0.18s ease, opacity 0.2s ease;
+        }
+        .leaflet-control-layers:not(.leaflet-control-layers-expanded) .leaflet-control-layers-toggle {
+            width: 42px !important;
+            height: 42px !important;
+            background-size: 22px 22px !important;
+            background-position: center !important;
+        }
+
+        /* Đảm bảo đỉnh của #right-controls-container luôn giữ khoảng cách đệm thoáng đãng dưới nút Layer Control */
+        #right-controls-container {
+            right: 12px !important;
+            padding: 2px 0 !important;
+            align-items: center;
+            max-height: calc(100dvh - var(--dynamic-top-offset, 138px) - var(--dynamic-bottom-offset, 24px) - var(--right-layer-ctrl-clearance, 68px)) !important;
+        }
+
+        /* Khi mở rộng danh sách Layer Control trên màn hình nhỏ, tự động làm mờ nhẹ cột nút bên phải để không chồng chéo thị giác */
+        body.layer-tree-open-mobile #right-controls-container {
+            opacity: 0.12 !important;
+            pointer-events: none !important;
+        }
+
+        /* 3. Tối ưu hóa chuyên biệt cho thiết bị di động (<= 767px):
+              Cùng trục dọc right: 8px, kích thước 37px đồng bộ và khoảng cách hài hòa với nút Layer Control */
+        @media (max-width: 767px) {
+            :root {
+                --right-layer-ctrl-clearance: 58px;
+            }
+            .leaflet-top.leaflet-right {
+                right: 8px !important;
+                top: var(--dynamic-top-offset, 124px) !important;
+            }
+            .leaflet-top.leaflet-right .leaflet-control-layers:not(.leaflet-control-layers-expanded) {
+                width: 37px !important;
+                height: 37px !important;
+                border-radius: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 0 !important;
+                margin-top: 2px !important;
+                margin-right: 0 !important;
+                box-shadow: 0 3px 10px rgba(35, 31, 22, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+            }
+            .leaflet-control-layers:not(.leaflet-control-layers-expanded) .leaflet-control-layers-toggle {
+                width: 37px !important;
+                height: 37px !important;
+                background-size: 19px 19px !important;
+                border-radius: 50% !important;
+            }
+
+            #right-controls-container {
+                right: 8px !important;
+                padding: 2px 0 !important;
+                gap: 6px !important;
+                width: 37px !important;
+                align-items: center !important;
+                max-height: calc(100dvh - var(--dynamic-top-offset, 124px) - var(--dynamic-bottom-offset, 24px) - var(--right-layer-ctrl-clearance, 58px)) !important;
+            }
+            #right-controls-container a,
+            #right-controls-container button {
+                width: 37px !important;
+                height: 37px !important;
+                min-height: 37px !important;
+                flex-shrink: 0 !important;
+            }
+            #right-controls-container svg {
+                width: 18.5px !important;
+                height: 18.5px !important;
+            }
+            #right-controls-container .control-group-divider {
+                width: 20px !important;
+                height: 1.5px !important;
+                margin: 1px auto !important;
+            }
+
+            /* Cột bên trái đồng bộ kích thước cân xứng với cột phải trên di động */
+            #support-controls-container {
+                left: 8px !important;
+                padding: 2px 0 !important;
+                gap: 6px !important;
+            }
+            #support-controls-container a,
+            #support-controls-container button {
+                width: 37px !important;
+                height: 37px !important;
+                min-height: 37px !important;
+                font-size: 15px !important;
+            }
+            #support-controls-container svg {
+                width: 18.5px !important;
+                height: 18.5px !important;
+            }
+        }
+
+        /* 4. Màn hình điện thoại chiều cao thấp (<= 720px): Thu gọn nhẹ kích thước nút để hiển thị trọn vẹn không chạm Layer Control */
+        @media (max-width: 767px) and (max-height: 720px) {
+            .leaflet-top.leaflet-right .leaflet-control-layers:not(.leaflet-control-layers-expanded),
+            .leaflet-control-layers:not(.leaflet-control-layers-expanded) .leaflet-control-layers-toggle {
+                width: 35px !important;
+                height: 35px !important;
+                background-size: 18px 18px !important;
+            }
+            #right-controls-container {
+                width: 35px !important;
+                gap: 5px !important;
+            }
+            #right-controls-container a,
+            #right-controls-container button,
+            #support-controls-container a,
+            #support-controls-container button {
+                width: 35px !important;
+                height: 35px !important;
+                min-height: 35px !important;
+            }
+            #right-controls-container svg,
+            #support-controls-container svg {
+                width: 17.5px !important;
+                height: 17.5px !important;
+            }
+        }
 </style>
     </head>
     <body>
@@ -6160,7 +6314,7 @@
                     <polyline points="3,16.5 12,21 21,16.5" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
-            <button id="custom-legend-editor-btn" class="role-gis-survey" onclick="window.LegendEditor && window.LegendEditor.open(false)" title="Chỉnh sửa Nội dung Chú giải các lớp bản đồ (Legend Editor)">
+            <button id="custom-legend-editor-btn" class="role-gis-survey" onclick="window.LegendEditor && window.LegendEditor.open(false)" title="Chỉnh sửa Nội dung Chú giải các lớp bản đồ (Legend Editor)" style="display: none !important;" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <rect x="3.5" y="4.5" width="4" height="4" rx="1" fill="#16a34a"/>
                     <line x1="9.5" y1="6.5" x2="20.5" y2="6.5" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
@@ -25186,6 +25340,68 @@ ${photoPlacemarksKml}</Document>
                     window.refreshLayerTreeControl();
                     window.syncAllWeatherAndEnsoUI();
                 }, 220);
+            });
+        })();
+        
+        // =========================================================================
+        // BỔ SUNG V39: ĐỘNG CƠ CANH CHỈNH KHOẢNG CÁCH ĐỘNG GIỮA NÚT LAYER CONTROL
+        // VÀ CỤM NÚT CHỨC NĂNG PHÍA PHẢI TRÊN THIẾT BỊ DI ĐỘNG
+        // =========================================================================
+        (function() {
+            // Đảm bảo ẩn nút Chỉnh sửa chú giải trên giao diện chính trong mọi trạng thái
+            function enforceHideMainLegendButton() {
+                const btn = document.getElementById('custom-legend-editor-btn');
+                if (btn) {
+                    btn.style.setProperty('display', 'none', 'important');
+                }
+            }
+
+            // Tính toán chính xác khoảng cách đệm từ đỉnh khu vực bản đồ xuống dưới đáy nút Layer Control
+            function syncRightControlsWithLayerControl() {
+                enforceHideMainLegendButton();
+                const isMobile = window.innerWidth <= 767;
+                const layerCtrl = document.querySelector('.leaflet-top.leaflet-right .leaflet-control-layers');
+                const topOffsetVal = parseInt(document.documentElement.style.getPropertyValue('--dynamic-top-offset') || (isMobile ? '124' : '138'), 10) || (isMobile ? 124 : 138);
+
+                // Kiểm tra trạng thái mở rộng của Layer Control trên di động để nhường không gian hiển thị
+                if (layerCtrl) {
+                    const isExpanded = layerCtrl.classList.contains('leaflet-control-layers-expanded');
+                    document.body.classList.toggle('layer-tree-open-mobile', isMobile && isExpanded);
+
+                    if (!isExpanded) {
+                        const rect = layerCtrl.getBoundingClientRect();
+                        if (rect.height > 0) {
+                            // Khoảng cách đệm hài hòa giữa đáy nút Layer Control và nút đầu tiên của cột phải: 18px trên di động, 22px trên máy tính
+                            const harmoniousGap = isMobile ? 18 : 22;
+                            const neededClearance = Math.max(isMobile ? 56 : 66, Math.round((rect.bottom - topOffsetVal) + harmoniousGap));
+                            document.documentElement.style.setProperty('--right-layer-ctrl-clearance', neededClearance + 'px');
+                        }
+                    }
+                }
+            }
+
+            const prevUpdateOffsetsV39 = window.updateDynamicLayoutOffsets;
+            window.updateDynamicLayoutOffsets = function() {
+                if (typeof prevUpdateOffsetsV39 === 'function') {
+                    prevUpdateOffsetsV39.apply(this, arguments);
+                }
+                syncRightControlsWithLayerControl();
+            };
+
+            // Theo dõi sự kiện đóng/mở hộp Layer Control để đồng bộ tức thời trên thiết bị cảm ứng
+            $(document).ready(function() {
+                enforceHideMainLegendButton();
+                setTimeout(syncRightControlsWithLayerControl, 150);
+                setTimeout(syncRightControlsWithLayerControl, 600);
+
+                $(document).on('click touchstart', '.leaflet-control-layers, #map', function() {
+                    setTimeout(syncRightControlsWithLayerControl, 50);
+                    setTimeout(syncRightControlsWithLayerControl, 220);
+                });
+
+                window.addEventListener('resize', () => {
+                    setTimeout(syncRightControlsWithLayerControl, 80);
+                });
             });
         })();
         </script>
