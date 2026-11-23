@@ -8,7 +8,7 @@
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="theme-color" content="#16a34a">
-        <title>Em Ếch Xinh - Real Estate</title>
+        <title>Em Ếch Xinh</title>
         
         <link rel="preconnect" href="https://script.google.com">
         <link rel="preconnect" href="https://maps.googleapis.com">
@@ -3549,6 +3549,71 @@
             display: none !important;
         }
 
+        /* Chỉ hiển thị cho Công nhân Hiện trường & Thể thao Cộng đồng (Nút Chia sẻ Vị trí Tức thời / SOS ngoài bản đồ) */
+        body[data-role="survey"] .role-worker-fitness,
+        body[data-role="gis"] .role-worker-fitness {
+            display: none !important;
+        }
+
+        /* Trong chế độ Công nhân Hiện trường: ẩn các nút Chụp & Khóa bị trùng lặp trong bảng Hành trình vì đã có Thanh 3 nút lớn ở đáy */
+        body[data-role="worker"] #btn-track-header-cam,
+        body[data-role="worker"] #btn-quick-cam-track,
+        body[data-role="worker"] #btn-lock-track {
+            display: none !important;
+        }
+
+        /* Cho phép Quản lý GIS bật nhanh Thanh Dock Đo vẽ 9 công cụ khi cần */
+        body[data-role="gis"].gis-show-survey-dock .ui-survey-dock {
+            display: block !important;
+        }
+        #btn-gis-toggle-survey-dock.btn-active {
+            background: linear-gradient(135deg, #7c3aed, #5b21b6) !important;
+            color: #ffffff !important;
+            border-color: #c4b5fd !important;
+        }
+        #btn-gis-toggle-survey-dock.btn-active svg polygon {
+            stroke: #ffffff !important;
+        }
+
+        /* Khung thu/mở danh sách dự báo 5 ngày gọn gàng trên di động */
+        .weather-forecast-details {
+            margin-top: 8px;
+            border: 1px solid rgba(146, 114, 67, 0.28);
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.65);
+            overflow: hidden;
+        }
+        .weather-forecast-details > summary {
+            padding: 8px 11px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e293b;
+            cursor: pointer;
+            background: rgba(246, 241, 229, 0.9);
+            user-select: none;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .weather-forecast-details > summary::-webkit-details-marker {
+            display: none;
+        }
+        .weather-forecast-details > summary::after {
+            content: '▼ Mở rộng';
+            font-size: 10.5px;
+            color: #1d5fa7;
+            font-weight: 700;
+        }
+        .weather-forecast-details[open] > summary::after {
+            content: '▲ Thu gọn';
+        }
+        .weather-forecast-details-body {
+            padding: 6px 10px 10px 10px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
         /* Nút mở nhanh Trình tạo Layout Báo cáo (Chỉ Quản lý GIS) */
         #custom-layout-composer-btn {
             background: linear-gradient(135deg, #0f766e, #0d9488) !important;
@@ -5669,19 +5734,19 @@
 
         <!-- THANH CHUYỂN ĐỔI 4 CHẾ ĐỘ NGƯỜI DÙNG (HIỆN TRƯỜNG - ĐO ĐẠC THỰC ĐỊA - QUẢN LÝ GIS - THỂ THAO) -->
         <div id="role-switcher" aria-label="Chuyển đổi chế độ người dùng">
-            <button type="button" class="role-btn" data-target-role="worker" title="Công nhân Hiện trường: Tối giản chữ to ngoài nắng, Thanh 3 nút lớn 1 chạm (Bắt đầu tuyến, Chụp Timemark, Khóa bỏ túi), Dẫn đường & Cảnh báo an toàn ENSO">
+            <button type="button" class="role-btn" data-target-role="worker" title="Công nhân Hiện trường: Giao diện chữ to tương phản cao ngoài nắng, Thanh 3 nút lớn 1 chạm (Bắt đầu ca, Chụp/Quay Video Timemark giọng nói, Khóa bỏ túi), Dẫn đường, SOS Vị trí & Cảnh báo an toàn thời gian thực">
                 👷 <span>Hiện trường</span>
             </button>
-            <button type="button" class="role-btn" data-target-role="survey" title="Đội Đo đạc Thực địa: Thanh Dock vẽ Điểm/Đường/Đa giác/Chữ nhật/Bán kính, Chốt GPS, Sửa đỉnh, Kiểu mẫu, Street View 360°, Kho Drive, Upload đa định dạng, QGIS Studio & Chụp Zalo">
+            <button type="button" class="role-btn" data-target-role="survey" title="Đội Đo đạc Thực địa: Dock 9 công cụ (Điểm/Đường/Đa giác/Chữ nhật/Bán kính/Chốt GPS/Nhập TĐ/Sửa đỉnh/Bảng), Ảnh lịch sử ESRI theo năm, Street View 360°, Kho Drive, Upload đa định dạng & Biên tập Đa nguồn">
                 📐 <span>Đo đạc</span>
             </button>
-            <button type="button" class="role-btn active" data-target-role="gis" title="Quản lý GIS & Ra quyết định: Đầy đủ QGIS Studio (5 phân hệ, 9 loại Biểu đồ), Trình tạo Layout Báo cáo HD, Chụp Zalo, Batch OCR, Dự báo 16 ngày, Quét rủi ro ENSO & Thủy văn">
+            <button type="button" class="role-btn active" data-target-role="gis" title="Quản lý GIS & Điều hành: Toàn quyền QGIS Studio (6 phân hệ, 9 Biểu đồ Quyết định, Biên tập Đa nguồn), Style & Legend Studio, Layout Báo cáo HD/PDF, Ảnh lịch sử ESRI, Batch OCR, Dự báo 16 ngày & Điều hành ENSO">
                 💻 <span>Quản lý GIS</span>
             </button>
-            <button type="button" class="role-btn" data-target-role="fitness" title="Thể thao & Cộng đồng: GPS Fitness (Pace, Calo, Độ dốc, Thẻ Workout), UV/AQI & Giờ vàng vận động, Check-in Timemark & Chụp màn hình chia sẻ Zalo">
+            <button type="button" class="role-btn" data-target-role="fitness" title="Thể thao & Cộng đồng: GPS Fitness chuẩn Strava (Pace, Calo, Độ dốc, Splits, Thẻ Workout PNG), Thời tiết UV/AQI & Giờ vàng vận động, Check-in Ảnh/Video Timemark & Chia sẻ lộ trình bảo mật">
                 🏃 <span>Thể thao</span>
             </button>
-            <button type="button" class="role-help-btn" id="btn-open-role-guide" onclick="window.openRoleAllocationModal && window.openRoleAllocationModal()" title="Xem bảng phân bổ chức năng giữa 4 nhóm người dùng">?</button>
+            <button type="button" class="role-help-btn" id="btn-open-role-guide" onclick="window.openRoleAllocationModal && window.openRoleAllocationModal()" title="Xem Ma trận Kiến trúc & Phân bổ Chức năng cho 4 Nhóm Người dùng">?</button>
         </div>
 
         <!-- NÚT BẬT/TẮT CHẾ ĐỘ BẢN ĐỒ THOÁNG (ẨN/HIỆN NHANH CÁC NÚT NỔI 2 BÊN TRÊN DI ĐỘNG) -->
@@ -5735,8 +5800,10 @@
         <!-- THANH CÔNG CỤ ĐO ĐẠC THỰC ĐỊA & BIÊN TẬP HÌNH HỌC GIS CHUYÊN SÂU (SURVEYOR DOCK) -->
         <div class="ui-survey-dock" id="surveyor-bottom-dock">
             <div class="survey-dock-header-bar">
-                <span>📐 Bàn phím Đo đạc & Biên tập GIS</span>
-                <div style="display:flex; gap:6px; align-items:center;">
+                <span>📐 Bàn phím Đo đạc & Biên tập Thực địa GIS</span>
+                <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
+                    <button type="button" class="btn-collapse-survey-dock" onclick="window.EsriHistorical && window.EsriHistorical.togglePanel()" style="background:#1d5fa7; border-color:#93c5fd;" title="Đối chiếu Ảnh vệ tinh Lịch sử ESRI qua các năm">🕰️ Ảnh lịch sử</button>
+                    <button type="button" class="btn-collapse-survey-dock" onclick="window.openQgisEditorTabDirectly && window.openQgisEditorTabDirectly()" style="background:#6d28d9; border-color:#c4b5fd;" title="Mở Bảng Biên tập Đa nguồn (Nạp lớp có sẵn vào sửa hình học & thuộc tính)">📥 Nạp lớp sửa</button>
                     <button type="button" class="btn-collapse-survey-dock" onclick="captureGpsSurveyPointOrVertex()" style="background:#0284c7; border-color:#7dd3fc;">🎯 Chốt GPS</button>
                     <button type="button" class="btn-collapse-survey-dock" id="btn-toggle-survey-dock" onclick="toggleSurveyorDockCollapse()">▼ Thu gọn</button>
                 </div>
@@ -6008,16 +6075,23 @@
                 </svg>
             </button>
             
+            <button id="btn-gis-toggle-survey-dock" class="role-gis-only" onclick="window.toggleGisSurveyDockQuick && window.toggleGisSurveyDockQuick()" title="Bật/Tắt Bàn phím Đo vẽ Hình học 9 công cụ (Chữ nhật, Bán kính, Nhập tọa độ, Sửa đỉnh)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <polygon points="3,19 19,3 19,19" fill="rgba(124, 58, 237, 0.2)" stroke="#6d28d9" stroke-width="2" stroke-linejoin="round"/>
+                    <polygon points="10.5,16 16,10.5 16,16" fill="#ffffff" stroke="#6d28d9" stroke-width="1.4"/>
+                </svg>
+            </button>
+
             <div class="support-row">
-                <a href="https://buymeacoffee.com/quanlycvcxv" target="_blank" id="buy-me-a-coffee-btn" title="Ủng hộ duy trì Hệ thống WebGIS Cây xanh">☕</a>
-                <a href="#" id="donate-btn" title="Thông tin hỗ trợ & Đóng góp phát triển">❤️</a>
-                <button id="info-btn" title="Mở Trung tâm Khí tượng & Thích ứng ENSO">⛅</button>
+                <a href="https://buymeacoffee.com/quanlycvcxv" target="_blank" id="buy-me-a-coffee-btn" class="role-no-worker" title="Ủng hộ duy trì Hệ thống WebGIS Cây xanh">☕</a>
+                <a href="#" id="donate-btn" class="role-no-worker" title="Thông tin hỗ trợ & Đóng góp phát triển">❤️</a>
+                <button id="info-btn" title="Mở Trung tâm Khí tượng, An toàn Thời gian thực & Thích ứng ENSO">⛅</button>
                 <button id="btn-open-f16-player" class="role-gis-only" onclick="open16DayForecastPlayer()" title="Trình phát 64 mốc Dự báo Mưa & Khí tượng 16 ngày (GFS)">🌧️</button>
             </div>
         </div>
 
                 <div id="right-controls-container">
-            <!-- CỤM 1: THU THẬP HIỆN TRƯỜNG & ĐIỀU HƯỚNG -->
+            <!-- CỤM 1: THU THẬP HIỆN TRƯỜNG, CHIA SẺ VỊ TRÍ & ĐIỀU HƯỚNG -->
             <button id="custom-timemark-cam-btn" class="role-no-worker" title="Chụp Ảnh & Quay Video Hiện trường đóng dấu Tọa độ GPS (Timemark)">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path d="M8.5 4L7 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3l-1.5-2h-7z" fill="#f59e0b" stroke="#b45309" stroke-width="1.2"/>
@@ -6030,6 +6104,15 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <rect x="3" y="3" width="18" height="18" rx="4" transform="rotate(45 12 12)" fill="#16a34a" stroke="#14532d" stroke-width="1.2"/>
                     <path d="M14 14.5V12h-4v3H8v-4c0-.55.45-1 1-1h5V7.5l3.5 3.5-3.5 3.5z" fill="#ffffff"/>
+                </svg>
+            </button>
+            <button id="custom-quick-share-loc-btn" class="role-worker-fitness" onclick="window.openQuickLocationShareModal && window.openQuickLocationShareModal()" title="Chia sẻ Vị trí Tức thời / SOS Khẩn cấp / Thẻ Hành trình (Có hẹn giờ bảo mật)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <circle cx="18" cy="5" r="3" fill="#0284c7" stroke="#0369a1" stroke-width="1.2"/>
+                    <circle cx="6" cy="12" r="3" fill="#16a34a" stroke="#15803d" stroke-width="1.2"/>
+                    <circle cx="18" cy="19" r="3" fill="#e11d48" stroke="#be123c" stroke-width="1.2"/>
+                    <line x1="8.6" y1="10.5" x2="15.4" y2="6.5" stroke="#334155" stroke-width="2"/>
+                    <line x1="8.6" y1="13.5" x2="15.4" y2="17.5" stroke="#334155" stroke-width="2"/>
                 </svg>
             </button>
             <button id="custom-streetview-btn" class="role-gis-survey" title="Đối chiếu Thực địa Google Street View 360°">
@@ -6660,7 +6743,10 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     <span>📋 Bảng Thuộc tính Đối tượng Đo đạc Thực địa</span>
                     <span style="font-size:12px; background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:999px;" id="gis-table-summary-badge">0 đối tượng</span>
                 </h3>
-                <p style="font-size:12px; color:#64748b; margin:-4px 0 8px 0;">Quản lý danh sách Điểm, Đường, Vùng đã thu thập; nhấn vào từng dòng để phóng tới vị trí hoặc chỉnh sửa kiểu dáng.</p>
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin:-2px 0 8px 0; padding:7px 10px; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:9px;">
+                    <span style="font-size:11.8px; color:#4c1d95; font-weight:600;">💡 Cần chỉnh sửa lớp KML/KMZ/Drive có sẵn hoặc sửa trực tiếp hàng loạt trên bảng?</span>
+                    <button type="button" class="qgis-mini-btn primary" onclick="$('#gis-attribute-table-modal').removeClass('visible'); window.openQgisEditorTabDirectly && window.openQgisEditorTabDirectly();" style="background:#6d28d9; border-color:#5b21b6;">✏️ Mở Biên tập Đa nguồn (QGIS Tab 6)</button>
+                </div>
 
                 <div class="gis-attr-table-wrap">
                     <table class="gis-attr-table">
@@ -6857,10 +6943,10 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;">
                         <div style="font-weight: 700; font-size: 12.5px; color: #166534; margin-bottom: 6px;">👤 Chọn giao diện phù hợp với vai trò của bạn:</div>
                         <select id="init-role-select" style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #86efac; font-size: 13px; font-weight: 600; color: #0f172a; background: #ffffff; outline: none;">
-                            <option value="gis">💻 Quản lý GIS (QGIS Studio 5 phân hệ, 9 Biểu đồ, Layout Xuất ảnh, Zalo, Batch OCR, 16 ngày & ENSO)</option>
-                            <option value="survey">📐 Đo đạc Thực địa (Dock Điểm/Đường/Vùng, Chốt GPS, Sửa đỉnh, Street View, Drive, QGIS Studio & Zalo)</option>
-                            <option value="worker">👷 Công nhân Hiện trường (Tối giản ngoài nắng, 3 nút lớn 1 chạm, Timemark & Cảnh báo an toàn)</option>
-                            <option value="fitness">🏃 Thể thao & Cộng đồng (Pace, Calo, Độ dốc, Thẻ Workout, UV/AQI, Check-in & Chụp Zalo)</option>
+                            <option value="gis">💻 Quản lý GIS & Điều hành (QGIS Studio 6 phân hệ, 9 Biểu đồ, Layout Báo cáo HD, Ảnh lịch sử ESRI, Batch OCR, 16 ngày & ENSO)</option>
+                            <option value="survey">📐 Đội Đo đạc Thực địa (Dock 9 công cụ Điểm/Đường/Vùng, Chốt GPS, Sửa đỉnh, Ảnh lịch sử ESRI, Street View, Drive & Biên tập Đa nguồn)</option>
+                            <option value="worker">👷 Công nhân Hiện trường (Tối giản ngoài nắng, Thanh 3 nút lớn 1 chạm, Ảnh/Video Timemark giọng nói, SOS Vị trí & An toàn thời gian thực)</option>
+                            <option value="fitness">🏃 Thể thao & Cộng đồng (GPS Fitness Pace/Calo/Độ dốc, Thẻ Workout PNG, Thời tiết UV/AQI & Giờ vàng, Check-in & Bảo mật lộ trình)</option>
                         </select>
                     </div>
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #475569; cursor: pointer;">
@@ -6887,10 +6973,11 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     <span class="qgis-badge-pill" id="qgis-selection-badge">Chọn: 0</span>
                 </div>
                 <div class="qgis-header-actions">
+                    <button type="button" class="qgis-hdr-btn" id="btn-qgis-history-quick" onclick="window.EsriHistorical && window.EsriHistorical.togglePanel()" title="Xem Ảnh vệ tinh Lịch sử ESRI theo năm (Timeline Wayback)">🕰️</button>
                     <button type="button" class="qgis-hdr-btn" id="btn-qgis-zalo-quick" onclick="window.ZaloCapture && window.ZaloCapture.startSnip()" title="Chụp màn hình & Chú thích (Alt+S)">✂️</button>
                     <button type="button" class="qgis-hdr-btn" id="btn-qgis-legend-quick" onclick="window.LegendEditor && window.LegendEditor.open(false)" title="Chỉnh sửa Nội dung Chú giải các lớp bản đồ">🏷️</button>
                     <button type="button" class="qgis-hdr-btn" id="btn-qgis-style-quick" onclick="window.StyleStudio && window.StyleStudio.open($('#qgis-active-layer-select').val())" title="Biên tập Kiểu dáng & Thư viện Ký hiệu chuẩn QGIS cho lớp đang chọn">🎨</button>
-                    <button type="button" class="qgis-hdr-btn" id="btn-qgis-layout-quick" onclick="window.LayoutComposer && window.LayoutComposer.open()" title="Tạo Layout Bản đồ & Báo cáo Xuất ảnh (QGIS Print Layout)">🖨️</button>
+                    <button type="button" class="qgis-hdr-btn role-gis-only" id="btn-qgis-layout-quick" onclick="window.LayoutComposer && window.LayoutComposer.open()" title="Tạo Layout Bản đồ & Báo cáo Xuất ảnh (QGIS Print Layout)">🖨️</button>
                     <button type="button" class="qgis-hdr-btn" id="btn-qgis-upload-quick" title="Tải lên tệp bản đồ (KML, KMZ, GeoJSON, GPX, Shapefile ZIP, CSV/Excel)">📂</button>
                     <button type="button" class="qgis-hdr-btn" id="btn-qgis-drive-quick" title="Mở Kho bản đồ Google Drive">☁️</button>
                     <button type="button" class="qgis-hdr-btn" id="btn-qgis-minimize" title="Thu nhỏ / Phóng to bảng">_</button>
@@ -7268,7 +7355,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                     <div class="qgis-section-card" style="margin-bottom:0;">
                         <div class="qgis-section-title">🚀 Lưu kết quả, Xuất ảnh Layout & Hành động Ra quyết định</div>
                         <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:7px;">
-                            <button type="button" class="qgis-mini-btn" style="background:linear-gradient(135deg,#0f766e,#0d9488); color:#fff; border-color:#0f766e; padding:7px 12px;" id="btn-qgis-open-layout-composer">🗺️ Tạo Layout Bản đồ & Báo cáo (Xuất ảnh HD)</button>
+                            <button type="button" class="qgis-mini-btn role-gis-only" style="background:linear-gradient(135deg,#0f766e,#0d9488); color:#fff; border-color:#0f766e; padding:7px 12px;" id="btn-qgis-open-layout-composer">🗺️ Tạo Layout Bản đồ & Báo cáo (Xuất ảnh HD)</button>
                             <button type="button" class="qgis-mini-btn" style="background:linear-gradient(135deg,#0068ff,#0284c7); color:#fff; border-color:#0068ff; padding:7px 12px;" id="btn-qgis-open-zalo-capture">✂️ Chụp màn hình (Alt+S)</button>
                         </div>
                         <div style="display:flex; flex-wrap:wrap; gap:6px;">
@@ -7499,6 +7586,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
                                 <label>Chọn nền bản đồ Mã nguồn mở (Miễn phí · Không API Key):</label>
                                 <select id="layout-oss-basemap">
                                     <option value="esri_satellite" selected>🛰️ Ảnh Vệ tinh Công khai (Esri Imagery · Mặc định)</option>
+                                    <option value="esri_historical">🕰️ Ảnh Vệ tinh Lịch sử ESRI (Theo kỳ năm đang chọn trên Timeline)</option>
                                     <option value="osm_fr">📍 OpenStreetMap France (Chi tiết đường phố cao)</option>
                                     <option value="osm_de">🧭 OpenStreetMap DE (Độ tương phản rõ nét)</option>
                                     <option value="opentopomap">⛰️ OpenTopoMap (Địa hình & Đường đồng mức SRTM)</option>
@@ -7690,53 +7778,98 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
         </div>
 
         
-        <!-- Modal Bảng Tổng quan Phân bổ Chức năng cho 4 Nhóm Người dùng (V24) -->
+        <!-- Modal Bảng Tổng quan Kiến trúc & Phân bổ Chức năng cho 4 Nhóm Người dùng (V38 Kiện toàn) -->
         <div id="role-allocation-guide-modal" class="modal-overlay" style="z-index:6800;">
-            <div class="modal-content" style="max-width: 680px;">
+            <div class="modal-content" style="max-width: 780px; max-height: 92dvh; overflow-y: auto;">
                 <button class="modal-close-btn" onclick="$('#role-allocation-guide-modal').removeClass('visible')">×</button>
-                <h3 style="color:#0f172a; display:flex; align-items:center; gap:8px;">👥 Phân bổ Chức năng chuẩn cho 4 Nhóm Người dùng</h3>
-                <p style="font-size:12px; color:#64748b; margin:-4px 0 8px 0;">Giao diện tự động tinh gọn đúng công cụ theo từng vai trò để tránh rối mắt trên di động và tối đa hiệu suất công việc.</p>
+                <h3 style="color:#0f172a; display:flex; align-items:center; gap:8px;">👥 Kiến trúc Phân bổ Chức năng Chuẩn cho 4 Nhóm Người dùng</h3>
+                <p style="font-size:12px; color:#64748b; margin:-4px 0 8px 0;">Hệ thống tự động thích ứng công cụ, danh mục hoạt động, nhãn chụp ảnh/video, cây lớp bản đồ và bảng thời tiết theo đúng quy trình nghiệp vụ của từng nhóm người dùng.</p>
 
                 <div class="role-matrix-grid">
                     <div class="role-matrix-card" data-card-role="worker">
-                        <h4><span>👷 1. Hiện trường (Công nhân)</span></h4>
+                        <h4><span>👷 1. Công nhân Hiện trường</span><span style="font-size:10px; background:#fef3c7; color:#b45309; padding:2px 7px; border-radius:999px;">Tác nghiệp 1 chạm</span></h4>
                         <ul>
-                            <li><b>Thanh 3 nút khổng lồ 1 chạm:</b> Bắt đầu tuyến GPS, Chụp Timemark (khóa GPS + đọc giọng nói), Khóa bỏ túi.</li>
-                            <li><b>Tối giản chống trùng lặp:</b> Ẩn các nút nhỏ thừa, chỉ giữ Định vị, Dẫn đường & Thời tiết chữ to.</li>
-                            <li><b>An toàn lao động:</b> Cảnh báo gió giật, sốc nhiệt & khuyến nghị ca làm việc / định mức tưới ENSO.</li>
+                            <li><b>Thanh Đáy 3 Nút Lớn Ngoài Nắng:</b> Bắt đầu/Kết thúc ca duy tu GPS, <b>Chụp Ảnh & Quay Video Timemark</b> (khóa chờ GPS + đọc ghi chú giọng nói 🎙️), Khóa bỏ túi chống chạm nhầm.</li>
+                            <li><b>Tinh gọn & Báo cáo vị trí:</b> Ẩn toàn bộ công cụ GIS/biểu đồ phức tạp; chỉ giữ Định vị, Dẫn đường giọng nói, <b>Chia sẻ vị trí tức thời / SOS</b> & Bật nhanh lớp Điểm ngập.</li>
+                            <li><b>An toàn Lao động Thời gian thực:</b> Cảnh báo theo khung giờ thực tế (Sáng/Trưa/Chiều/Đêm), gió giật, sốc nhiệt & khuyến nghị định mức tưới ENSO.</li>
                         </ul>
-                        <button type="button" style="background:linear-gradient(135deg,#f59e0b,#ea580c);" onclick="applyUserRole('worker', true); $('#role-allocation-guide-modal').removeClass('visible');">Chuyển sang Hiện trường</button>
+                        <button type="button" style="background:linear-gradient(135deg,#f59e0b,#ea580c);" onclick="applyUserRole('worker', true); $('#role-allocation-guide-modal').removeClass('visible');">Kích hoạt chế độ Hiện trường</button>
                     </div>
 
                     <div class="role-matrix-card" data-card-role="survey">
-                        <h4><span>📐 2. Đo đạc Thực địa</span></h4>
+                        <h4><span>📐 2. Đội Đo đạc Thực địa</span><span style="font-size:10px; background:#f3e8ff; color:#6d28d9; padding:2px 7px; border-radius:999px;">Trắc địa & Biên tập</span></h4>
                         <ul>
-                            <li><b>Thanh Dock Đo đạc chuyên sâu:</b> Vẽ Điểm/Đường/Đa giác/Chữ nhật/Bán kính, Chốt GPS, Nhập tọa độ, Sửa đỉnh & Kiểu mẫu.</li>
-                            <li><b>Đối chiếu & Tra cứu:</b> Street View 360°, Kho Drive, Upload đa định dạng, <b>QGIS Studio</b> & <b>Chụp màn hình </b>.</li>
-                            <li><b>Thời tiết thực địa:</b> Độ ẩm đất ENSO & đánh giá điều kiện đo đạc ngoài trời (ẩn Dự báo 16 ngày & Batch OCR).</li>
+                            <li><b>Bàn phím Đo đạc 9 công cụ:</b> Chấm Điểm, Vẽ Đường, Đa giác, Chữ nhật, Bán kính, <b>Chốt đỉnh GPS thực tế</b>, Nhập tọa độ & Buffer, Sửa đỉnh & Bảng thuộc tính.</li>
+                            <li><b>Đối chiếu Thực địa & Lịch sử:</b> <b>Ảnh vệ tinh Lịch sử ESRI theo năm (Wayback Timeline)</b>, Street View 360°, Kho Drive, Upload đa định dạng (KML/KMZ/GeoJSON/SHP/Excel).</li>
+                            <li><b>Biên tập Đa nguồn & Khí tượng:</b> Nạp lớp có sẵn vào sửa hình học/thuộc tính (QGIS Tab 6), Style/Legend Studio, Chụp Zalo & đánh giá tín hiệu GPS/ẩm đất.</li>
                         </ul>
-                        <button type="button" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);" onclick="applyUserRole('survey', true); $('#role-allocation-guide-modal').removeClass('visible');">Chuyển sang Đo đạc</button>
+                        <button type="button" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);" onclick="applyUserRole('survey', true); $('#role-allocation-guide-modal').removeClass('visible');">Kích hoạt chế độ Đo đạc</button>
                     </div>
 
                     <div class="role-matrix-card" data-card-role="gis">
-                        <h4><span>💻 3. Quản lý GIS & Điều hành</span></h4>
+                        <h4><span>💻 3. Quản lý GIS & Điều hành</span><span style="font-size:10px; background:#dbeafe; color:#1d4ed8; padding:2px 7px; border-radius:999px;">Toàn quyền hệ thống</span></h4>
                         <ul>
-                            <li><b>QGIS Studio đầy đủ 5 phân hệ:</b> Bảng thuộc tính, Truy vấn Thuộc tính/Không gian, Buffer/Join/Overlay/Màu & <b>9 Biểu đồ Quyết định</b>.</li>
-                            <li><b>Báo cáo & Xuất ảnh:</b> Nút mở nhanh <b>Trình tạo Layout HD/PDF</b> & <b>Chụp màn hình chú thích (Alt+S)</b>.</li>
-                            <li><b>Giám sát chuyên sâu:</b> Batch OCR Timemark, Phát 64 mốc Dự báo 16 ngày, Quét Cây Rủi ro ENSO & Thủy văn Thượng nguồn.</li>
+                            <li><b>QGIS Studio đầy đủ 6 phân hệ:</b> (1) Bảng thuộc tính, (2) Truy vấn Thuộc tính, (3) Truy vấn Không gian, (4) Buffer/Join/Overlay/Màu, (5) <b>9 Biểu đồ Quyết định</b> & (6) <b>Biên tập Đa nguồn</b>.</li>
+                            <li><b>Thiết kế & Xuất bản Báo cáo:</b> <b>Style Studio</b> (18 SVG/9 Đường/10 Mẫu tô), <b>Legend Studio</b>, <b>Print Layout Composer HD/PDF</b> (tích hợp cả nền Ảnh lịch sử ESRI) & Chụp Zalo (Alt+S).</li>
+                            <li><b>Điều hành Khí hậu & Dữ liệu:</b> Batch OCR Timemark, Phát 64 mốc Dự báo Mưa 16 ngày, Mô phỏng kịch bản El Niño/La Niña, Quét Cây Rủi ro & Giám sát 3 Hồ Thượng nguồn.</li>
                         </ul>
-                        <button type="button" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);" onclick="applyUserRole('gis', true); $('#role-allocation-guide-modal').removeClass('visible');">Chuyển sang Quản lý GIS</button>
+                        <button type="button" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);" onclick="applyUserRole('gis', true); $('#role-allocation-guide-modal').removeClass('visible');">Kích hoạt chế độ Quản lý GIS</button>
                     </div>
 
                     <div class="role-matrix-card" data-card-role="fitness">
-                        <h4><span>🏃 4. Thể thao & Cộng đồng</span></h4>
+                        <h4><span>🏃 4. Thể thao & Cộng đồng</span><span style="font-size:10px; background:#dcfce7; color:#15803d; padding:2px 7px; border-radius:999px;">Vận động & Sức khỏe</span></h4>
                         <ul>
-                            <li><b>GPS Fitness chuẩn Strava:</b> Chạy bộ/Đi bộ/Đạp xe, Pace TB, Tiêu hao Calo, Auto-Pause, Voice Cue mỗi km & Biểu đồ Độ dốc.</li>
-                            <li><b>Chia sẻ & Cộng đồng:</b> Thẻ ảnh Workout PNG, Chia sẻ vị trí/hành trình có hạn bảo mật, Check-in Timemark & <b>Chụp màn hình</b>.</li>
-                            <li><b>Thời tiết Vận động:</b> Hiển thị nổi bật <b>Tia UV, AQI (PM2.5) & Khung giờ vàng tập luyện</b> (ẩn mọi lớp/nút GIS kỹ thuật).</li>
+                            <li><b>GPS Fitness chuẩn Strava:</b> Chạy bộ/Đi bộ/Đạp xe/Trekking, Pace TB, Calo, Auto-Pause, Giọng nói mỗi km (Split Voice Cue) & Biểu đồ Độ cao - Độ dốc trực tiếp.</li>
+                            <li><b>Cộng đồng & Bảo mật Riêng tư:</b> Chụp Ảnh/Video Check-in & Phản ánh cây xanh cộng đồng, Xuất <b>Thẻ Ảnh Workout PNG</b>, Chia sẻ vị trí/lộ trình tự hủy & Ẩn 200m đầu/cuối.</li>
+                            <li><b>Thời tiết Vận động chuyên biệt:</b> Hiển thị nổi bật <b>Tia UV, Chất lượng không khí AQI (PM2.5) & Khung giờ vàng tập luyện 24h</b> (ẩn toàn bộ công cụ/lớp GIS kỹ thuật).</li>
                         </ul>
-                        <button type="button" style="background:linear-gradient(135deg,#22c55e,#16a34a);" onclick="applyUserRole('fitness', true); $('#role-allocation-guide-modal').removeClass('visible');">Chuyển sang Thể thao</button>
+                        <button type="button" style="background:linear-gradient(135deg,#22c55e,#16a34a);" onclick="applyUserRole('fitness', true); $('#role-allocation-guide-modal').removeClass('visible');">Kích hoạt chế độ Thể thao</button>
                     </div>
+                </div>
+
+                <!-- Bảng Ma trận Đối chiếu Phân quyền Nhanh -->
+                <div style="margin-top:12px; border:1px solid #cbd5e1; border-radius:10px; overflow-x:auto; background:#ffffff;">
+                    <table style="width:100%; border-collapse:collapse; font-size:11.2px; text-align:center;">
+                        <thead>
+                            <tr style="background:#f1f5f9; color:#1e293b; border-bottom:1.5px solid #cbd5e1;">
+                                <th style="padding:7px 8px; text-align:left;">Nhóm Chức năng / Phân hệ</th>
+                                <th style="padding:7px 6px;">👷 Hiện trường</th>
+                                <th style="padding:7px 6px;">📐 Đo đạc</th>
+                                <th style="padding:7px 6px;">💻 Quản lý GIS</th>
+                                <th style="padding:7px 6px;">🏃 Thể thao</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:6px 8px; text-align:left; font-weight:700;">Chụp Ảnh & Quay Video Timemark (Giọng nói)</td>
+                                <td>✅ (Nút lớn 1 chạm)</td><td>✅ (Nhãn khảo sát)</td><td>✅ (Đầy đủ)</td><td>✅ (Nhãn cộng đồng)</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #f1f5f9; background:#f8fafc;">
+                                <td style="padding:6px 8px; text-align:left; font-weight:700;">Ghi Hành trình GPS, Khóa bỏ túi & Chia sẻ bảo mật</td>
+                                <td>✅ (Tuyến duy tu)</td><td>✅ (Tuyến khảo sát)</td><td>✅ (Giám sát tuyến)</td><td>✅ (Pace, Calo, Splits)</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:6px 8px; text-align:left; font-weight:700;">Dock Đo đạc 9 công cụ, Chốt GPS & Sửa đỉnh</td>
+                                <td>—</td><td>✅ (Mặc định đáy)</td><td>✅ (Bật/Tắt nhanh)</td><td>—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #f1f5f9; background:#f8fafc;">
+                                <td style="padding:6px 8px; text-align:left; font-weight:700;">Ảnh vệ tinh Lịch sử ESRI theo năm & Street View 360°</td>
+                                <td>—</td><td>✅ (Đối chiếu thực địa)</td><td>✅ (Phân tích & In ấn)</td><td>—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:6px 8px; text-align:left; font-weight:700;">QGIS Studio (6 Phân hệ, Biên tập Đa nguồn, Style/Legend)</td>
+                                <td>—</td><td>✅ (Phân tích & Biên tập)</td><td>✅ (Toàn quyền + 9 Biểu đồ)</td><td>—</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #f1f5f9; background:#f8fafc;">
+                                <td style="padding:6px 8px; text-align:left; font-weight:700;">Print Layout Composer (HD/PDF) & Batch OCR</td>
+                                <td>—</td><td>—</td><td>✅ (Chuyên biệt Quản lý)</td><td>—</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:6px 8px; text-align:left; font-weight:700;">Trọng tâm Khí tượng Thời gian thực & Cây lớp Bản đồ</td>
+                                <td>An toàn ca & Tưới ENSO</td><td>Tín hiệu GPS & Ẩm đất</td><td>ENSO, 16 ngày & Thủy văn</td><td>UV, AQI & Giờ vàng</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -8331,8 +8464,7 @@ Nội dung: Đo đạc hiện trạng cây xanh bóng mát khu vực Thủ Đứ
             chunkInterval: 100,
             chunkDelay: 25
         });
-        map.addLayer(layerCloudTreesCluster);
-
+    
         var layer_CanhBao_DiemNgap = L.featureGroup();
         var layer_QuanLy_TuyenCayXanh = L.featureGroup();
         var layer_QuanLy_MangXanh = L.featureGroup();
@@ -18854,6 +18986,23 @@ ${photoPlacemarksKml}</Document>
                         (z, x, y) => `https://tile.openstreetmap.de/${z}/${x}/${y}.png`
                     ]
                 },
+                esri_historical: {
+                    label: 'Ảnh Vệ tinh Lịch sử ESRI (Wayback Timeline)',
+                    attribution: '© Esri Historical Imagery (Wayback Archive) · Vector WebGIS Cây Xanh 2',
+                    maxZoom: 18,
+                    url: (z, x, y) => {
+                        const snap = (window.EsriHistorical && typeof window.EsriHistorical.getLatestOrActiveSnapshot === 'function')
+                            ? window.EsriHistorical.getLatestOrActiveSnapshot()
+                            : (window.EsriHistorical && typeof window.EsriHistorical.getActiveSnapshot === 'function' ? window.EsriHistorical.getActiveSnapshot() : null);
+                        if (snap && snap.tileTemplate) {
+                            return snap.tileTemplate.replace('{z}', z).replace('{y}', y).replace('{x}', x);
+                        }
+                        return `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/36500/${z}/${y}/${x}`;
+                    },
+                    fallbacks: [
+                        (z, x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`
+                    ]
+                },
                 osm_fr: {
                     label: 'OpenStreetMap France (Mã nguồn mở)',
                     attribution: '© OpenStreetMap France (ODbL)',
@@ -20907,7 +21056,7 @@ ${photoPlacemarksKml}</Document>
                     const roleToasts = {
                         worker: "👷 Hiện trường: Thanh 3 nút lớn 1 chạm, Timemark giọng nói, Dẫn đường & Cảnh báo an toàn!",
                         survey: "📐 Đo đạc: Dock vẽ GIS chuyên sâu, Chốt GPS, Sửa đỉnh, Street View, Drive, QGIS Studio & Chụp Zalo!",
-                        gis: "💻 Quản lý GIS: Đầy đủ QGIS Studio (5 phân hệ, 9 Biểu đồ), Layout Báo cáo HD, Chụp Zalo, Batch OCR, 16 ngày & ENSO!",
+                        gis: "💻 Quản lý GIS: Đầy đủ QGIS Studio (6 phân hệ, 9 Biểu đồ), Layout Báo cáo HD, Ảnh lịch sử ESRI, Chụp Zalo, Batch OCR, 16 ngày & ENSO!",
                         fitness: "🏃 Thể thao & Cộng đồng: Pace, Calo, Độ dốc, UV/AQI, Check-in Timemark & Chụp màn hình Zalo!"
                     };
                     showToast(roleToasts[targetRole], targetRole === 'gis' ? 'info' : 'success');
@@ -24448,6 +24597,597 @@ ${photoPlacemarksKml}</Document>
             };
         })();
 
+        
+        // =========================================================================
+        // BỔ SUNG V38: KIỆN TOÀN KIẾN TRÚC 4 NHÓM NGƯỜI DÙNG, HỢP NHẤT KHÍ TƯỢNG
+        // THỜI GIAN THỰC + ENSO, CÂY LỚP BẢN ĐỒ THÍCH ỨNG & ĐỒNG BỘ LỊCH SỬ ESRI
+        // =========================================================================
+        (function() {
+            // 1. Cấu hình Danh mục Hoạt động Hành trình (#track-activity-type) chuyên biệt cho từng nhóm người dùng
+            const ROLE_ACTIVITY_OPTIONS = {
+                worker: [
+                    { value: 'survey', label: '🌳 Tuần tra & Duy tu cây xanh' },
+                    { value: 'pruning', label: '✂️ Cắt tỉa nhánh & Hạ tán phòng bão' },
+                    { value: 'watering', label: '💧 Tưới nước & Chăm sóc mảng xanh' },
+                    { value: 'emergency', label: '⚠️ Ứng cứu Sự cố cây ngã / Ngập úng' }
+                ],
+                survey: [
+                    { value: 'survey', label: '📐 Đo đạc & Khảo sát thực địa GIS' },
+                    { value: 'tree_audit', label: '🌳 Kiểm kê Cây xanh & Ranh mảng xanh' },
+                    { value: 'infra_survey', label: '💧 Đo vẽ Hạ tầng Tưới / Thoát nước' },
+                    { value: 'park_bound', label: '📍 Đo vẽ Ranh giới Công viên' }
+                ],
+                gis: [
+                    { value: 'survey', label: '🛰️ Giám sát & Kiểm tra Hiện trường GIS' },
+                    { value: 'inspection', label: '🌳 Nghiệm thu Tuyến Cây xanh & Công viên' },
+                    { value: 'flood_check', label: '🌊 Kiểm tra Điểm ngập & Hành lang Thủy văn' }
+                ],
+                fitness: [
+                    { value: 'running', label: '🏃 Chạy bộ (Running)' },
+                    { value: 'walking', label: '🚶 Đi bộ / Dạo công viên (Walking)' },
+                    { value: 'cycling', label: '🚴 Đạp xe (Cycling)' },
+                    { value: 'trekking', label: '🥾 Đi bộ đường dài (Trekking)' }
+                ]
+            };
+
+            // 2. Cấu hình Nhãn đóng dấu nhanh Camera/Video Timemark (#tm-quick-tags-bar) theo từng nhóm người dùng
+            const ROLE_TIMEMARK_TAGS = {
+                worker: [
+                    { stamp: 'HIỆN TRƯỜNG: TRƯỚC KHI CẮT TỈA / XỬ LÝ', label: '✂️ Trước xử lý', danger: false },
+                    { stamp: 'NGHIỆM THU: SAU KHI HOÀN THÀNH DUY TU', label: '✅ Sau xử lý', danger: false },
+                    { stamp: 'CẢNH BÁO: SỰ CỐ CÂY XANH KHẨN CẤP', label: '⚠️ Sự cố khẩn', danger: true },
+                    { stamp: 'THÍCH ỨNG EL NINO: TƯỚI BỔ SUNG & CHỐNG HẠN', label: '🔥 Tưới El Niño', danger: false },
+                    { stamp: 'ỨNG PHÓ LA NINA: HẠ TÁN & CHỐNG BẬT GỐC', label: '🌧️ Phòng bão La Niña', danger: true },
+                    { stamp: 'TUẦN TRA DUY TU CÂY XANH & CHIẾU SÁNG', label: '👷 Tuần tra ca', danger: false }
+                ],
+                survey: [
+                    { stamp: 'ĐO ĐẠC THỰC ĐỊA & ĐỐI CHIẾU HIỆN TRẠNG GIS', label: '📐 Đo đạc GIS', danger: false },
+                    { stamp: 'MỐC TỌA ĐỘ & RANH GIỚI MẢNG XANH / CÔNG VIÊN', label: '📍 Mốc ranh giới', danger: false },
+                    { stamp: 'KIỂM KÊ CÂY XANH BÓNG MÁT & CỔ THỤ', label: '🌳 Kiểm kê cây', danger: false },
+                    { stamp: 'KHẢO SÁT HẠ TẦNG TƯỚI & ĐIỂM NGẬP ÚNG', label: '💧 Hạ tầng nước', danger: false },
+                    { stamp: 'CẢNH BÁO: CÂY NGHIÊNG / SÂU BỆNH NGUY HIỂM', label: '⚠️ Cây nguy hiểm', danger: true }
+                ],
+                gis: [
+                    { stamp: 'GIÁM SÁT & NGHIỆM THU HIỆN TRƯỜNG WEBGIS', label: '💻 Giám sát GIS', danger: false },
+                    { stamp: 'HIỆN TRƯỜNG: TRƯỚC KHI CẮT TỈA / XỬ LÝ', label: '✂️ Trước xử lý', danger: false },
+                    { stamp: 'NGHIỆM THU: SAU KHI HOÀN THÀNH', label: '✅ Nghiệm thu', danger: false },
+                    { stamp: 'CẢNH BÁO: SỰ CỐ CÂY XANH / NGẬP ÚNG KHẨN', label: '⚠️ Sự cố khẩn', danger: true },
+                    { stamp: 'THÍCH ỨNG EL NINO: KHÔ HẠN & TƯỚI BỔ SUNG', label: '🔥 Kịch bản El Niño', danger: false },
+                    { stamp: 'ỨNG PHÓ LA NINA: NGẬP RỄ & PHÒNG BẬT GỐC', label: '🌧️ Kịch bản La Niña', danger: true }
+                ],
+                fitness: [
+                    { stamp: 'CHECK-IN HÀNH TRÌNH CHẠY BỘ & VẬN ĐỘNG XANH', label: '🏃 Check-in Tập luyện', danger: false },
+                    { stamp: 'CHECK-IN CÔNG VIÊN & KHÔNG GIAN XANH ĐÔ THỊ', label: '🌿 Công viên xanh', danger: false },
+                    { stamp: 'GÓP Ý CỘNG ĐỒNG: CHĂM SÓC & BẢO VỆ CÂY XANH', label: '🌳 Góp ý cây xanh', danger: false },
+                    { stamp: 'PHẢN ÁNH CỘNG ĐỒNG: CÂY NGÃ / CÀNH GÃY / NGẬP', label: '⚠️ Báo sự cố đường chạy', danger: true }
+                ]
+            };
+
+            function syncActivityOptionsForRole(role) {
+                const sel = document.getElementById('track-activity-type');
+                if (!sel) return;
+                const opts = ROLE_ACTIVITY_OPTIONS[role] || ROLE_ACTIVITY_OPTIONS.gis;
+                const prevVal = sel.value;
+                sel.innerHTML = opts.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+                if (opts.some(o => o.value === prevVal)) {
+                    sel.value = prevVal;
+                } else {
+                    sel.value = opts[0].value;
+                    $(sel).trigger('change');
+                }
+            }
+
+            function syncTimemarkTagsForRole(role) {
+                const bar = document.getElementById('tm-quick-tags-bar');
+                if (!bar) return;
+                const tags = ROLE_TIMEMARK_TAGS[role] || ROLE_TIMEMARK_TAGS.gis;
+                bar.innerHTML = tags.map((t, i) =>
+                    `<button type="button" class="tm-tag-chip ${i === 0 ? 'active' : ''} ${t.danger ? 'tag-danger' : ''}" data-stamp="${t.stamp}">${t.label}</button>`
+                ).join('');
+                const projInput = document.getElementById('tm-project-input');
+                if (projInput && !extState.isTracking) {
+                    projInput.value = tags[0].stamp;
+                    $(projInput).trigger('input');
+                }
+            }
+
+            // 3. Mở nhanh Modal Chia sẻ Vị trí Tức thời / SOS / Hành trình từ nút ngoài bản đồ
+            window.openQuickLocationShareModal = function() {
+                if (typeof openShareJourneyModal === 'function') {
+                    openShareJourneyModal('live');
+                } else {
+                    $('#share-journey-modal').addClass('visible');
+                    if (typeof switchShareJourneyTab === 'function') switchShareJourneyTab('live');
+                }
+            };
+
+            // 4. Mở thẳng Phân hệ 6 (Biên tập Đa nguồn) trong QGIS Studio
+            window.openQgisEditorTabDirectly = function() {
+                if (window.QGISStudio && typeof window.QGISStudio.togglePanel === 'function') {
+                    if (!$('#qgis-studio-panel').hasClass('visible')) {
+                        window.QGISStudio.togglePanel(true);
+                    }
+                    $('#qgis-studio-panel').removeClass('minimized');
+                    $('#btn-qgis-minimize').text('_');
+                }
+                const tabBtn = document.querySelector('.qgis-tab-btn[data-qtab="editor"]');
+                if (tabBtn) tabBtn.click();
+            };
+
+            // 5. Bật/Tắt nhanh Thanh Dock Đo vẽ 9 công cụ cho Quản lý GIS
+            window.toggleGisSurveyDockQuick = function(forceState) {
+                const body = document.body;
+                const isOn = (typeof forceState === 'boolean')
+                    ? forceState
+                    : !body.classList.contains('gis-show-survey-dock');
+                body.classList.toggle('gis-show-survey-dock', isOn);
+                $('#btn-gis-toggle-survey-dock').toggleClass('btn-active', isOn);
+                if (isOn) {
+                    $('#surveyor-bottom-dock').removeClass('dock-collapsed');
+                    $('#btn-toggle-survey-dock').html('▼ Thu gọn');
+                    showToast("📐 Đã mở Bàn phím Đo vẽ & Biên tập Hình học 9 công cụ cho Quản lý GIS!", "info");
+                }
+                if (typeof window.updateDynamicLayoutOffsets === 'function') {
+                    setTimeout(window.updateDynamicLayoutOffsets, 60);
+                }
+            };
+
+            // 6. Kiện toàn Cây Lớp Bản đồ (Layer Tree) thích ứng theo từng nhóm người dùng
+            const masterOverlaysTree = (typeof overlaysTree !== 'undefined' && Array.isArray(overlaysTree))
+                ? overlaysTree.slice()
+                : [];
+
+            function buildRoleFilteredOverlaysTree(role) {
+                if (!masterOverlaysTree.length) return overlaysTree;
+                return masterOverlaysTree.filter(groupNode => {
+                    const lbl = String(groupNode.label || '').toLowerCase();
+                    if (role === 'worker') {
+                        // Công nhân hiện trường: Ẩn 64 lớp Dự báo 16 ngày & 6 lớp Thủy văn Hybas vĩ mô để cây lớp thật gọn
+                        if (lbl.includes('dự báo 16 ngày') || lbl.includes('hybas')) return false;
+                        if (lbl.includes('ngoại vi') && (!groupNode.children || groupNode.children.length === 0)) return false;
+                        return true;
+                    }
+                    if (role === 'survey') {
+                        // Đội đo đạc: Ẩn 64 lớp Dự báo 16 ngày (chỉ dành cho Quản lý GIS)
+                        if (lbl.includes('dự báo 16 ngày')) return false;
+                        return true;
+                    }
+                    if (role === 'fitness') {
+                        // Thể thao & Cộng đồng: Chỉ giữ Cảnh báo (Điểm ngập), Quản lý (Cây xanh, Công viên, Mảng xanh), Thời tiết & Giao thông, Bản đồ nền
+                        if (lbl.includes('giám sát') || lbl.includes('dự báo 16 ngày') || lbl.includes('hybas')) return false;
+                        if (lbl.includes('ngoại vi') && (!groupNode.children || groupNode.children.length === 0)) return false;
+                        return true;
+                    }
+                    return true; // Quản lý GIS: Toàn quyền 100% lớp
+                });
+            }
+
+            window.refreshLayerTreeControl = function() {
+                try {
+                    const role = document.body.getAttribute('data-role') || 'gis';
+                    if (lay) map.removeControl(lay);
+                    const filteredTree = buildRoleFilteredOverlaysTree(role);
+                    lay = L.control.layers.tree(null, filteredTree, { collapsed: true });
+                    lay.addTo(map);
+                } catch (e) {
+                    console.warn("LayerTree refresh warning:", e);
+                }
+                if (window.QGISStudio && typeof window.QGISStudio.onLayerDataChanged === 'function') {
+                    window.QGISStudio.onLayerDataChanged();
+                }
+                if (typeof window.refreshQgisEditorSourceDropdown === 'function') {
+                    window.refreshQgisEditorSourceDropdown();
+                }
+            };
+
+            // 7. HỢP NHẤT HOÀN CHỈNH ĐỘNG CƠ KHÍ TƯỢNG + THÍCH ỨNG ENSO + CẢNH BÁO AN TOÀN THỜI GIAN THỰC
+            //    (Sửa triệt để lỗi thứ tự hàm làm mất khối ENSO và lọc chuẩn thẻ khuyến nghị cho 4 vai trò)
+            window.syncAllWeatherAndEnsoUI = function() {
+                const w = window.extWeatherPro;
+                if (!w || w.tempC === null || w.tempC === undefined) return;
+                const role = document.body.getAttribute('data-role') || 'gis';
+
+                // Chạy đánh giá an toàn theo thời gian thực (giờ hiện tại + vai trò + ENSO)
+                if (typeof window.evaluateRealTimeWeatherSafety === 'function') {
+                    window.evaluateRealTimeWeatherSafety();
+                }
+
+                // Cập nhật Viên thuốc Thời tiết (#live-weather-pill)
+                const pill = $('#live-weather-pill');
+                pill.removeClass('hazard-safe hazard-caution hazard-danger').addClass('hazard-' + (w.hazardLevel || 'safe'));
+
+                const now = new Date();
+                const clockTag = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                const gustTxt = w.windGustMs ? ` (Giật ${Number(w.windGustMs).toFixed(1)})` : '';
+
+                $('#wp-temp-icon').text(`🕒 ${clockTag} · ⛅ ${Number(w.tempC).toFixed(1)}°C`);
+                $('#wp-rain-prob').text(`🌧️ Mưa: ${Math.round(w.rainProbPct || 0)}%`).show();
+                $('#wp-wind-gust').text(`💨 Gió: ${Number(w.windSpeedMs || 0).toFixed(1)}m/s${gustTxt}`).show();
+
+                const uvTxt = (w.uvIndex !== null && w.uvIndex !== undefined) ? Number(w.uvIndex).toFixed(1) : '--';
+                const aqiTxt = (w.aqiVal !== null && w.aqiVal !== undefined) ? w.aqiVal : '--';
+                $('#wp-uv-aqi').text(`☀️ UV: ${uvTxt} · 🍃 AQI: ${aqiTxt}`);
+
+                const es = window.ensoState || {};
+                const ensoBadge = $('#wp-enso-badge');
+                ensoBadge.removeClass('elnino lanina neutral').addClass(es.effectivePhase || 'neutral');
+                if (es.effectivePhase === 'elnino') {
+                    ensoBadge.html('🔥 El Niño');
+                    $('#wp-soil-et0').html(`🌱 Ẩm: ${es.soilSaturationPct ?? 24}% · Tưới: ${es.irrigationNeedLitersM2 ?? 3.5}L/m²`);
+                } else if (es.effectivePhase === 'lanina') {
+                    ensoBadge.html('🌧️ La Niña');
+                    $('#wp-soil-et0').html(`🌊 Ẩm: ${es.soilSaturationPct ?? 88}% · Mưa 72h: ${es.rainPast72hMm ?? 95}mm`);
+                } else {
+                    ensoBadge.html('⚖️ Trung tính');
+                    $('#wp-soil-et0').html(`🌱 Ẩm đất: ${es.soilSaturationPct ?? 62}%`);
+                }
+
+                // Hiển thị đúng các ngăn trên viên thuốc theo vai trò
+                $('#live-weather-pill .wp-dynamic-sep, #wp-safety-badge').css('display', '');
+                $('#wp-soil-et0').toggle(role === 'gis' || role === 'survey');
+                $('#wp-uv-aqi').toggle(role === 'fitness');
+
+                const badge = $('#wp-safety-badge');
+                badge.removeClass('safe caution danger').addClass(w.hazardLevel || 'safe');
+                if (w.hazardLevel === 'danger') badge.text(`🔴 Nguy hiểm (${clockTag})`);
+                else if (w.hazardLevel === 'caution') badge.text(`🟡 Chú ý (${clockTag})`);
+                else badge.text(`🟢 An toàn (${clockTag})`);
+
+                // Cập nhật dòng thời tiết trực tiếp trên khung ngắm Camera Timemark
+                const camWeatherLine = `⛅ ${Number(w.tempC).toFixed(1)}°C (${w.desc || 'Thực địa'}) · Mưa ${Math.round(w.rainProbPct || 0)}% · Gió ${Number(w.windSpeedMs || 0).toFixed(1)}m/s${w.uvIndex !== null ? ' · UV ' + Number(w.uvIndex).toFixed(1) : ''}`;
+                $('#tm-live-weather-label').text(camWeatherLine);
+            };
+
+            // Khôi phục chuỗi đóng dấu Thời tiết + ENSO đầy đủ lên Ảnh/Video Timemark
+            window.getCurrentWeatherStampString = function() {
+                const w = window.extWeatherPro;
+                if (!w || w.tempC === null || w.tempC === undefined) return '';
+                const gustPart = w.windGustMs ? ` (Giật ${Number(w.windGustMs).toFixed(1)}m/s)` : '';
+                const uvPart = (w.uvIndex !== null && w.uvIndex !== undefined) ? ` | UV: ${Number(w.uvIndex).toFixed(1)}` : '';
+                const baseStr = `Thời tiết: ${Number(w.tempC).toFixed(1)}°C (${w.desc || 'Thực địa'}) | Mưa: ${Math.round(w.rainProbPct || 0)}% | Gió: ${Number(w.windSpeedMs || 0).toFixed(1)}m/s${gustPart}${uvPart}`;
+                const es = window.ensoState;
+                if (!es) return baseStr;
+                const phaseTag = es.effectivePhase === 'elnino' ? 'EL NINO' : (es.effectivePhase === 'lanina' ? 'LA NINA' : 'ENSO');
+                return `${baseStr} | [${phaseTag}] Ẩm đất: ${es.soilSaturationPct}% · Mưa 72h: ${es.rainPast72hMm}mm · Bật gốc: ${es.uprootRiskIndex}`;
+            };
+
+            // Ghi đè chuẩn hóa renderWeather: Phân tách rõ 4 thẻ vai trò + Tích hợp Trung tâm ENSO + Thu gọn danh sách 5 ngày trên di động
+            window.renderWeather = function(forecastData, locationName) {
+                if (!forecastData || !forecastData.list || !forecastData.list.length) return;
+                const current = forecastData.list[0];
+                const icon = `https://openweathermap.org/img/w/${current.weather[0].icon}.png`;
+                const w = window.extWeatherPro || {};
+                const role = document.body.getAttribute('data-role') || 'gis';
+
+                window.syncAllWeatherAndEnsoUI();
+
+                const gustVal = w.windGustMs ? Number(w.windGustMs).toFixed(1) : (current.wind.speed * 1.3).toFixed(1);
+                const uvVal = (w.uvIndex !== null && w.uvIndex !== undefined) ? Number(w.uvIndex).toFixed(1) : '--';
+                const aqiVal = (w.aqiVal !== null && w.aqiVal !== undefined) ? w.aqiVal : '--';
+                const pm25Val = (w.pm25 !== null && w.pm25 !== undefined) ? w.pm25 : '--';
+
+                let aqiStatus = 'Tốt';
+                if (w.aqiVal > 100) aqiStatus = 'Kém';
+                else if (w.aqiVal > 50) aqiStatus = 'TB';
+
+                const ensoPanelHtml = (typeof window.buildEnsoWeatherPanelHTML === 'function')
+                    ? window.buildEnsoWeatherPanelHTML()
+                    : '';
+
+                // Với Công nhân & Thể thao: thu gọn danh sách 40 mốc 5 ngày để bảng thời tiết gọn trong 1 màn hình
+                const shouldOpenDetails = (role === 'gis' || role === 'survey');
+
+                let forecastListHtml = '';
+                let lastDay = new Date().getDay();
+                for (const forecast of forecastData.list) {
+                    const date = new Date(forecast.dt * 1000);
+                    const currentDate = date.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit' });
+                    const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    const windSpeed = forecast.wind.speed;
+                    const windDirection = typeof getWindDirectionText === 'function' ? getWindDirectionText(forecast.wind.deg) : '';
+                    const pop = (forecast.pop || 0) * 100;
+                    const description = forecast.weather[0].description;
+                    const temp = forecast.main.temp.toFixed(0);
+                    if (date.getDay() !== lastDay) {
+                        forecastListHtml += `<h4 style="margin-top: 10px; border-top: 1px solid #ddd; padding-top: 6px;">${currentDate}</h4>`;
+                        lastDay = date.getDay();
+                    }
+                    forecastListHtml += `<div class="forecast-item"><span><strong>${time}:</strong> ${temp}°C, ${description}</span><span style="font-size: 0.85em; color: #666;">Gió: ${windSpeed}m/s (${windDirection}) | Mưa: ${pop.toFixed(0)}%</span></div>`;
+                }
+
+                const weatherHTML = `
+                  <div class="weather-header">
+                    <button class="weather-close-btn" onclick="hideWeatherInfoPanel()">×</button>
+                    <h3>⛅ Khí tượng & Thích ứng: ${locationName}</h3>
+                  </div>
+                  <div class="current-weather-main">
+                    <img src="${icon}" alt="${current.weather[0].description}">
+                    <div>
+                        <div style="font-size:14px; color:#0f172a; font-weight:700;">Hiện tại: ${current.main.temp.toFixed(1)}°C · ${current.weather[0].description}</div>
+                        <div style="font-size:11px; color:#64748b; font-weight:600;">Độ ẩm: ${current.main.humidity}% | Áp suất: ${current.main.pressure} hPa | Mưa: ${Math.round((current.pop || 0) * 100)}%</div>
+                    </div>
+                  </div>
+
+                  <div class="weather-metrics-mini-grid">
+                    <div class="wm-mini-box">
+                        <span class="lbl">💨 Gió / Giật</span>
+                        <span class="val">${current.wind.speed.toFixed(1)} / ${gustVal} m/s</span>
+                    </div>
+                    <div class="wm-mini-box">
+                        <span class="lbl">☀️ Chỉ số UV</span>
+                        <span class="val" style="color:${w.uvIndex >= 8 ? '#dc2626' : '#15803d'};">${uvVal}</span>
+                    </div>
+                    <div class="wm-mini-box">
+                        <span class="lbl">🍃 AQI (PM2.5)</span>
+                        <span class="val" style="color:${w.aqiVal > 80 ? '#d97706' : '#15803d'};">${aqiVal} (${aqiStatus})</span>
+                    </div>
+                  </div>
+
+                  <!-- 1. Thẻ khuyến nghị & thao tác nhanh dành riêng cho CÔNG NHÂN HIỆN TRƯỜNG -->
+                  <div class="weather-role-card weather-role-worker role-worker-only">
+                    <div style="font-weight:800; margin-bottom:4px;">${w.hazardTitle || '👷 An toàn Lao động Hiện trường'}</div>
+                    <div style="margin-bottom:7px;">${w.hazardAdvice || ''}</div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button type="button" class="btn-action btn-blue" style="padding:6px 10px; font-size:11.5px; flex:1;" onclick="toggleQuickRainAndFloodLayers(); hideWeatherInfoPanel();">🌊 Bật Điểm Ngập & Mưa</button>
+                        <button type="button" class="btn-action" style="background:#dc2626; color:#fff; padding:6px 10px; font-size:11.5px; flex:1;" onclick="hideWeatherInfoPanel(); window.openQuickLocationShareModal();">🆘 Báo Vị trí / SOS</button>
+                    </div>
+                  </div>
+
+                  <!-- 2. Thẻ khuyến nghị & thao tác nhanh dành riêng cho ĐỘI ĐO ĐẠC THỰC ĐỊA -->
+                  <div class="weather-role-card weather-role-survey role-survey-only">
+                    <div style="font-weight:800; margin-bottom:4px;">📐 Điều kiện Đo đạc Thực địa & Tín hiệu GPS:</div>
+                    <div style="margin-bottom:7px;">${w.hazardTitle || ''}<br>Mưa: <b>${Math.round((current.pop || 0) * 100)}%</b> · Gió giật: <b>${gustVal} m/s</b> — ${(current.pop || 0) >= 0.6 ? '⚠️ Mây dày/mưa có thể gây suy hao GPS, cần kiểm tra độ chính xác trước khi chốt đỉnh.' : '✅ Tín hiệu vệ tinh thuận lợi để chốt đỉnh GPS, đo vẽ Điểm/Đường/Vùng & đối chiếu lịch sử.'}</div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button type="button" class="btn-action" style="background:#6d28d9; color:#fff; padding:5px 10px; font-size:11px; flex:1;" onclick="openGisAttributeTableModal(); hideWeatherInfoPanel();">📋 Bảng thuộc tính Đo đạc</button>
+                        <button type="button" class="btn-action" style="background:#1d5fa7; color:#fff; padding:5px 10px; font-size:11px; flex:1;" onclick="hideWeatherInfoPanel(); window.EsriHistorical && window.EsriHistorical.open();">🕰️ Ảnh lịch sử ESRI</button>
+                    </div>
+                  </div>
+
+                  <!-- 3. Thẻ công cụ điều hành dành riêng cho QUẢN LÝ GIS -->
+                  <div class="weather-role-card weather-role-gis role-gis-only">
+                    <div style="font-weight:800; margin-bottom:4px;">💻 Điều hành Khí tượng, Lịch sử & Ngập úng GIS:</div>
+                    <div style="font-size:11.5px; margin-bottom:7px;">${w.hazardTitle || ''} — ${w.hazardAdvice || ''}</div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button type="button" class="btn-action btn-blue" style="padding:5px 9px; font-size:11px; flex:1;" onclick="open16DayForecastPlayer(); hideWeatherInfoPanel();">▶️ Phát Dự báo 16 ngày</button>
+                        <button type="button" class="btn-action btn-green" style="padding:5px 9px; font-size:11px; flex:1;" onclick="toggleQuickRainAndFloodLayers()">🌊 Lớp Mưa & Điểm Ngập</button>
+                        <button type="button" class="btn-action" style="background:#1d5fa7; color:#fff; padding:5px 9px; font-size:11px; flex:1;" onclick="hideWeatherInfoPanel(); window.EsriHistorical && window.EsriHistorical.open();">🕰️ Ảnh lịch sử ESRI</button>
+                    </div>
+                  </div>
+
+                  <!-- 4. Thẻ sức khỏe & vận động dành riêng cho THỂ THAO & CỘNG ĐỒNG -->
+                  <div class="weather-role-card weather-role-fitness ui-fitness-only">
+                    <div style="font-weight:800; margin-bottom:3px;">${w.hazardTitle || '🏃 Thời tiết Vận động & Sức khỏe'}</div>
+                    <div style="margin-bottom:5px;">${w.hazardAdvice || ''}</div>
+                    <div style="background:#ffffff; border:1px solid #bbf7d0; border-radius:8px; padding:6px 8px; margin-bottom:7px;">
+                        <div>🕒 <b>Khung giờ vàng 24h tới:</b> <span style="color:#15803d; font-weight:800;">${w.bestWorkoutWindow || '16:30 – 18:30'}</span></div>
+                        <div>🍃 <b>Bụi mịn PM2.5:</b> <b>${pm25Val} µg/m³</b> (AQI ${aqiVal} - ${aqiStatus}) · ☀️ <b>Tia UV:</b> <b>${uvVal}</b></div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <button type="button" class="btn-action btn-green" style="padding:6px 10px; font-size:11.5px; flex:1;" onclick="hideWeatherInfoPanel(); if(!extState.isTracking) $('#custom-start-tracking-btn').click();">🏃 Bắt đầu Tập luyện GPS</button>
+                        <button type="button" class="btn-action btn-blue" style="padding:6px 10px; font-size:11.5px; flex:1;" onclick="hideWeatherInfoPanel(); $('#custom-timemark-cam-btn').click();">📸 Check-in Công viên</button>
+                    </div>
+                  </div>
+
+                  <!-- Trung tâm Thích ứng Biến đổi Khí hậu ENSO (Hiển thị cho Hiện trường, Đo đạc & Quản lý GIS) -->
+                  ${ensoPanelHtml}
+
+                  <!-- 5 Tab Biểu đồ phân tích Khí tượng chuyên sâu (Dành cho Quản lý GIS & Đo đạc) -->
+                  <div class="weather-tab-container role-gis-survey">
+                     <button class="weather-tab-btn active" onclick="switchWeatherView('list')">📋 Dự báo 5 ngày</button>
+                     <button class="weather-tab-btn" onclick="switchWeatherView('rain')">🌧️ Đồ thị Mưa</button>
+                     <button class="weather-tab-btn" onclick="switchWeatherView('wind')">🌀 Hoa Gió</button>
+                     <button class="weather-tab-btn" onclick="switchWeatherView('humidity')">💧 Độ ẩm</button>
+                     <button class="weather-tab-btn" onclick="switchWeatherView('pressure')">📈 Áp suất</button>
+                  </div>
+                  <div id="weather-chart-area" class="weather-chart-wrapper" style="display:none;"><canvas id="weatherCanvasNode"></canvas></div>
+
+                  <details class="weather-forecast-details" ${shouldOpenDetails ? 'open' : ''}>
+                    <summary>📅 Chi tiết Dự báo Thời tiết 5 ngày tới (40 mốc 3 giờ)</summary>
+                    <div id="weather-list-area" class="weather-forecast-details-body">${forecastListHtml}</div>
+                  </details>
+                `;
+
+                const weatherInfoEl = document.getElementById('weather-info');
+                if (weatherInfoEl) weatherInfoEl.innerHTML = weatherHTML;
+            };
+
+            // Hợp nhất hàm getWeather để gọi đồng thời cả OpenWeatherMap + Open-Meteo UV/AQI + Open-Meteo ENSO Soil Moisture/ET0
+            const baseGetWeatherV38 = window.getWeather;
+            window.getWeather = async function(lat, lng, locationName) {
+                try {
+                    await Promise.all([
+                        (typeof baseGetWeatherV38 === 'function') ? baseGetWeatherV38(lat, lng, locationName) : Promise.resolve(),
+                        (typeof window.fetchEnsoClimateMetrics === 'function') ? window.fetchEnsoClimateMetrics(lat, lng) : Promise.resolve()
+                    ]);
+                    window.syncAllWeatherAndEnsoUI();
+                    if (extState.lastWeatherData) {
+                        window.renderWeather(extState.lastWeatherData, locationName || window.extWeatherPro?.locationName || 'Khu vực hiện tại');
+                    }
+                } catch (err) {
+                    console.warn("getWeather V38 sync warning:", err);
+                }
+            };
+
+            // 8. Mở rộng EsriHistorical để cung cấp snapshot cho Print Layout Composer và tránh va chạm với Dock Đo đạc & Dự báo 16 ngày
+            if (window.EsriHistorical) {
+                const origEhOpen = window.EsriHistorical.open;
+                const origEhClose = window.EsriHistorical.close;
+
+                window.EsriHistorical.open = async function() {
+                    // Đóng Trình phát 16 ngày nếu đang mở để tránh 2 thanh timeline đè nhau
+                    if ($('#forecast-16d-player').is(':visible') && typeof window.close16DayForecastPlayer === 'function') {
+                        window.close16DayForecastPlayer();
+                    }
+                    // Thu gọn Thanh Dock Đo đạc nếu đang mở
+                    if ($('#surveyor-bottom-dock').is(':visible') && typeof window.toggleSurveyorDockCollapse === 'function') {
+                        window.toggleSurveyorDockCollapse(true);
+                    }
+                    await origEhOpen.apply(this, arguments);
+                    $('#custom-esri-history-btn').addClass('btn-active');
+                    if (typeof window.updateDynamicLayoutOffsets === 'function') {
+                        setTimeout(window.updateDynamicLayoutOffsets, 90);
+                    }
+                };
+
+                window.EsriHistorical.close = function() {
+                    origEhClose.apply(this, arguments);
+                    $('#custom-esri-history-btn').removeClass('btn-active');
+                    if (typeof window.updateDynamicLayoutOffsets === 'function') {
+                        setTimeout(window.updateDynamicLayoutOffsets, 90);
+                    }
+                };
+
+                window.EsriHistorical.getLatestOrActiveSnapshot = function() {
+                    const active = this.getActiveSnapshot ? this.getActiveSnapshot() : null;
+                    if (active) return active;
+                    const snapSelect = document.getElementById('eh-snapshot-select');
+                    if (snapSelect && snapSelect.options.length > 0) {
+                        const txt = snapSelect.options[snapSelect.selectedIndex]?.text || 'Kỳ lịch sử ESRI';
+                        return { dateStr: txt, year: ($('#eh-year-filter').val() || '2024'), tileTemplate: null };
+                    }
+                    return null;
+                };
+            }
+
+            // Khi mở Trình phát 16 ngày: tự động đóng bảng Ảnh lịch sử ESRI nếu đang mở
+            const prevOpen16dV38 = window.open16DayForecastPlayer;
+            window.open16DayForecastPlayer = function() {
+                if (window.EsriHistorical && $('#esri-historical-panel').hasClass('visible')) {
+                    window.EsriHistorical.close();
+                }
+                if ($('#surveyor-bottom-dock').is(':visible') && typeof window.toggleSurveyorDockCollapse === 'function') {
+                    window.toggleSurveyorDockCollapse(true);
+                }
+                if (typeof prevOpen16dV38 === 'function') prevOpen16dV38();
+                if (typeof window.updateDynamicLayoutOffsets === 'function') {
+                    setTimeout(window.updateDynamicLayoutOffsets, 120);
+                }
+            };
+
+            // Khi mở Print Layout Composer: nếu người dùng đang bật Ảnh lịch sử ESRI trên bản đồ chính, tự động chọn nền esri_historical
+            if (window.LayoutComposer && typeof window.LayoutComposer.open === 'function') {
+                const origComposerOpen = window.LayoutComposer.open;
+                window.LayoutComposer.open = function() {
+                    if ($('#esri-historical-panel').hasClass('visible')) {
+                        const basemapSel = document.getElementById('layout-oss-basemap');
+                        if (basemapSel) {
+                            basemapSel.value = 'esri_historical';
+                            $(basemapSel).trigger('change');
+                        }
+                    }
+                    return origComposerOpen.apply(this, arguments);
+                };
+            }
+
+            // 9. Nâng cấp updateDynamicLayoutOffsets để tính cả chiều cao của #esri-historical-panel
+            const prevUpdateOffsetsV38 = window.updateDynamicLayoutOffsets;
+            window.updateDynamicLayoutOffsets = function() {
+                if (typeof prevUpdateOffsetsV38 === 'function') prevUpdateOffsetsV38();
+                const ehPanel = document.getElementById('esri-historical-panel');
+                if (ehPanel && ehPanel.classList.contains('visible')) {
+                    const curBottom = parseInt(document.documentElement.style.getPropertyValue('--dynamic-bottom-offset') || '24', 10) || 24;
+                    const ehRect = ehPanel.getBoundingClientRect();
+                    if (ehRect.height > 0) {
+                        const newOffset = Math.max(curBottom, Math.round(ehRect.height + 24));
+                        document.documentElement.style.setProperty('--dynamic-bottom-offset', newOffset + 'px');
+                    }
+                }
+            };
+
+            // 10. Đồng bộ 2 chiều khi Lưu hoặc Xóa đối tượng giữa Bảng Thuộc tính Đo đạc và Phân hệ 6 QGIS Studio
+            const prevSaveFeatV38 = window.saveGisFeatureStyleAndAttributes;
+            if (typeof prevSaveFeatV38 === 'function') {
+                window.saveGisFeatureStyleAndAttributes = function() {
+                    prevSaveFeatV38.apply(this, arguments);
+                    if (typeof window.renderQgisMultiSourceEditorTable === 'function') {
+                        window.renderQgisMultiSourceEditorTable();
+                    }
+                };
+            }
+
+            const prevDeleteLayerV38 = window.deleteDrawnLayer;
+            if (typeof prevDeleteLayerV38 === 'function') {
+                window.deleteDrawnLayer = function(stampId) {
+                    prevDeleteLayerV38.apply(this, arguments);
+                    if (typeof window.renderQgisMultiSourceEditorTable === 'function') {
+                        window.renderQgisMultiSourceEditorTable();
+                    }
+                    if (typeof window.renderGisAttributeTableRows === 'function' && $('#gis-attribute-table-modal').hasClass('visible')) {
+                        window.renderGisAttributeTableRows();
+                    }
+                };
+            }
+
+            // 11. KIỆN TOÀN HÀM CHUYỂN ĐỔI 4 VAI TRÒ NGƯỜI DÙNG (applyUserRole)
+            const prevApplyRoleV38 = window.applyUserRole;
+            window.applyUserRole = function(role, showNotification = true) {
+                const validRoles = ['worker', 'survey', 'gis', 'fitness'];
+                const targetRole = validRoles.includes(role) ? role : 'gis';
+
+                // Chạy hàm nền nhưng tắt toast cũ để phát 1 thông báo chuẩn xác duy nhất của V38
+                if (typeof prevApplyRoleV38 === 'function') {
+                    prevApplyRoleV38(targetRole, false);
+                }
+
+                // Tắt Dock Đo vẽ mở tạm của Quản lý GIS khi rời khỏi chế độ GIS
+                if (targetRole !== 'gis' && document.body.classList.contains('gis-show-survey-dock')) {
+                    document.body.classList.remove('gis-show-survey-dock');
+                    $('#btn-gis-toggle-survey-dock').removeClass('btn-active');
+                }
+
+                // Sửa lỗi biến isGlobalVertexEditing: tự động khóa và lưu đỉnh đang sửa khi rời chế độ Đo đạc / GIS
+                if (targetRole !== 'survey' && targetRole !== 'gis' && window.surveyConfig && window.surveyConfig.isGlobalVertexEditing) {
+                    if (typeof window.toggleGlobalVertexEditMode === 'function') {
+                        window.toggleGlobalVertexEditMode();
+                    }
+                }
+
+                // Đóng Ảnh lịch sử ESRI nếu chuyển sang Công nhân Hiện trường hoặc Thể thao
+                if ((targetRole === 'worker' || targetRole === 'fitness') && window.EsriHistorical && $('#esri-historical-panel').hasClass('visible')) {
+                    window.EsriHistorical.close();
+                }
+
+                // Đồng bộ Danh mục Hoạt động Hành trình & Nhãn nhanh Timemark theo vai trò mới
+                syncActivityOptionsForRole(targetRole);
+                syncTimemarkTagsForRole(targetRole);
+
+                // Cập nhật lại Cây lớp bản đồ theo đúng vai trò mới
+                if (typeof window.refreshLayerTreeControl === 'function') {
+                    window.refreshLayerTreeControl();
+                }
+
+                // Cập nhật ngay lập tức Viên thuốc Thời tiết & Bảng Thời tiết theo ngữ cảnh vai trò mới
+                window.syncAllWeatherAndEnsoUI();
+                if (extState && extState.lastWeatherData && typeof window.renderWeather === 'function') {
+                    window.renderWeather(extState.lastWeatherData, window.extWeatherPro?.locationName || 'Khu vực hiện tại');
+                }
+
+                if (showNotification) {
+                    const consolidatedToasts = {
+                        worker: "👷 Hiện trường: Thanh 3 nút lớn 1 chạm, Ảnh/Video Timemark giọng nói, SOS Vị trí & Cảnh báo an toàn thời gian thực!",
+                        survey: "📐 Đo đạc: Dock 9 công cụ GIS, Chốt đỉnh GPS, Ảnh lịch sử ESRI, Street View, Drive & Biên tập Đa nguồn!",
+                        gis: "💻 Quản lý GIS: Toàn quyền QGIS Studio (6 phân hệ, 9 Biểu đồ), Style/Legend, Layout Báo cáo HD, Ảnh lịch sử ESRI, 16 ngày & ENSO!",
+                        fitness: "🏃 Thể thao & Cộng đồng: GPS Fitness (Pace, Calo, Độ dốc, Splits), UV/AQI & Giờ vàng, Check-in & Chia sẻ lộ trình bảo mật!"
+                    };
+                    showToast(consolidatedToasts[targetRole], targetRole === 'gis' ? 'info' : 'success');
+                }
+
+                if (typeof window.updateDynamicLayoutOffsets === 'function') {
+                    setTimeout(window.updateDynamicLayoutOffsets, 100);
+                }
+            };
+
+            // Khởi tạo đồng bộ ngay khi trang sẵn sàng
+            $(document).ready(function() {
+                setTimeout(() => {
+                    const curRole = document.body.getAttribute('data-role') || 'gis';
+                    syncActivityOptionsForRole(curRole);
+                    syncTimemarkTagsForRole(curRole);
+                    window.refreshLayerTreeControl();
+                    window.syncAllWeatherAndEnsoUI();
+                }, 220);
+            });
+        })();
         </script>
     </body>
 </html>
